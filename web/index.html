@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyRun 控制台</title>
+<link rel="stylesheet" href="/app/console.css?v=40">
+</head>
+<body>
+<div class="shell">
+  <aside class="sider">
+    <div class="brand">EasyRun <b>UI Agent</b></div>
+    <nav class="nav">
+      <a href="#/overview" data-nav="overview"><span data-i18n="nav.overview">总览</span></a>
+      <a href="#/cases" data-nav="cases"><span data-i18n="nav.cases">用例</span></a>
+      <a href="#/plans" data-nav="plans"><span data-i18n="nav.plans">计划</span></a>
+      <a href="#/runs" data-nav="runs"><span data-i18n="nav.runs">执行</span></a>
+      <a href="#/settings" data-nav="settings"><span data-i18n="nav.settings">配置</span></a>
+    </nav>
+    <div class="sider-foot">
+      <a href="/app/docs.html" class="ghost" target="_blank" data-i18n="nav.docs">使用文档</a>
+      <a href="/docs" class="ghost" target="_blank" data-i18n="nav.api">API 文档</a>
+      <a href="/demo/" class="ghost" target="_blank" data-i18n="nav.demo">演示站点</a>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <h1 id="page-title">总览</h1>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="health" class="health">…</span>
+        <button id="lang-btn" class="btn sm" title="Language / 语言">EN</button>
+      </div>
+    </header>
+    <div id="view"></div>
+  </main>
+</div>
+<div id="modal-root"></div>
+<script src="/app/console.js?v=40"></script>
+</body>
+</html>

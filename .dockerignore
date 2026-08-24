@@ -1,0 +1,30 @@
+# 构建上下文瘦身：以下内容不进入镜像、不随 docker build 上传上下文。
+# 多机部署时仓库会被拷贝到各台机器，排除项越多、逐台构建越快。
+
+# VCS / 工具目录
+.git
+.claude
+.venv
+__pycache__
+*.pyc
+*.egg-info
+.pytest_cache
+build/
+dist/
+
+# 密钥与本地配置
+.env
+
+# 运行时数据（本机生成：数据库 / 截图 / Allure 输出 / 浏览器内核）
+data/
+easyrun.db
+artifacts/
+
+# 本机二进制（Allure CLI + JRE：由 scripts/setup-allure.sh 按平台下载，
+# Docker 镜像内同样在构建时重新下载 Linux 版本）
+tools/
+
+# 开发与排查类文件（不进镜像）
+tests/
+docs/
+/*.txt

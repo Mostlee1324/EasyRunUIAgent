@@ -1,0 +1,69 @@
+# 生产形态：api（控制面，不跑浏览器）+ worker（执行面，可水平扩展）+ Redis + PostgreSQL
+#
+# 单机：DEEPSEEK_API_KEY=sk-xxx docker compose up -d --build
+# 多机：worker 服务部署到多台主机（共享 redis/postgres），
+#       docker compose up --scale worker=3
+# 数据：运行时数据统一绑定挂载到项目根目录 data/（截图 / Allure / PostgreSQL 数据），
+#       每台机器各自持有本机 data/；需要跨节点聚合工件时把 data/ 挂 NFS
+#       （完整配置见 README「形态二·第 4 步：数据路径配置详解」）。
+# Allure：镜像构建时已内置 CLI + JRE（tools/bin/allure），运行时自动探测，无需配置。
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: easyrun
+      POSTGRES_PASSWORD: easyrun
+      POSTGRES_DB: easyrun
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easyrun"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment: &common
+      EASYRUN_REDIS_URL: redis://redis:6379/0
+      EASYRUN_DATABASE_URL: postgresql+asyncpg://easyrun:easyrun@postgres:5432/easyrun
+      EASYRUN_BROWSER_HEADLESS: "true"
+      # Allure 不显式配置：自动探测顺序 = EASYRUN_ALLURE_BIN → PATH → <项目根>/tools/bin/allure
+      # （容器内即 /srv/tools/bin/allure，构建镜像时生成，跟随代码位置自适应，无需硬编码路径）
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      # 控制面：调度器 + REST API + Web 控制台，不跑浏览器
+      EASYRUN_WORKERS: "0"
+    volumes:
+      - ./data:/srv/data
+    depends_on:
+      redis: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: easyrun worker
+    environment:
+      <<: *common
+      EASYRUN_WORKERS: "4"
+    volumes:
+      - ./data:/srv/data
+    depends_on:
+      redis: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    # 执行面：按需扩容（docker compose up --scale worker=3）
+    # 多机：在每台执行机拷贝项目后 docker compose up -d --no-deps --build worker，
+    #       通过 docker-compose.override.yml 指向中心 Redis/PG（见 README）。

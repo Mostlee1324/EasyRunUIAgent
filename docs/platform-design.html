@@ -1,0 +1,1047 @@
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-l="doc.title">EasyRun UI Agent · 平台架构方案 v0.3</title>
+<style>
+:root {
+  --ground: #F4F6F9;
+  --surface: #FFFFFF;
+  --surface-2: #ECF0F5;
+  --ink: #182235;
+  --ink-2: #52637B;
+  --hairline: #DFE5EE;
+  --accent: #0E7490;
+  --accent-ink: #0A5669;
+  --accent-soft: #E3F2F6;
+  --pass: #15803D;  --pass-soft: #E9F6EE;
+  --fail: #B91C1C;  --fail-soft: #FCECEA;
+  --warn: #B45309;  --warn-soft: #FBF1E2;
+  --info: #1D4ED8;  --info-soft: #E7EDFB;
+  --sans: -apple-system, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0C1320;
+    --surface: #131C2B;
+    --surface-2: #1A2536;
+    --ink: #E5EBF4;
+    --ink-2: #93A4BB;
+    --hairline: #263348;
+    --accent: #33B5CE;
+    --accent-ink: #7BD6E6;
+    --accent-soft: #112733;
+    --pass: #4ADE80;  --pass-soft: #10291B;
+    --fail: #F87171;  --fail-soft: #2C1717;
+    --warn: #FBBF24;  --warn-soft: #2C2412;
+    --info: #60A5FA;  --info-soft: #16223A;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0C1320;
+  --surface: #131C2B;
+  --surface-2: #1A2536;
+  --ink: #E5EBF4;
+  --ink-2: #93A4BB;
+  --hairline: #263348;
+  --accent: #33B5CE;
+  --accent-ink: #7BD6E6;
+  --accent-soft: #112733;
+  --pass: #4ADE80;  --pass-soft: #10291B;
+  --fail: #F87171;  --fail-soft: #2C1717;
+  --warn: #FBBF24;  --warn-soft: #2C2412;
+  --info: #60A5FA;  --info-soft: #16223A;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 15px/1.85 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent-soft); color: var(--accent-ink); }
+a { color: var(--accent-ink); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ---- masthead ---- */
+.masthead { border-top: 3px solid var(--accent); border-bottom: 1px solid var(--hairline); background: var(--surface); }
+.masthead-in { max-width: 1216px; margin: 0 auto; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.masthead-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.wordmark { font: 600 15px/1 var(--mono); letter-spacing: .02em; color: var(--ink); }
+.wordmark b { color: var(--accent); font-weight: 600; }
+.meta { font: 12px/1 var(--mono); color: var(--ink-2); letter-spacing: .04em; }
+.lang-btn { font: 600 12.5px/1 var(--sans); padding: 7px 14px; border-radius: 6px; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink); cursor: pointer; }
+.lang-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.doc-lang[hidden] { display: none; }
+
+/* ---- layout ---- */
+.wrap { max-width: 1216px; margin: 0 auto; padding: 40px 24px 64px; display: grid; grid-template-columns: 208px minmax(0, 1fr); gap: 56px; align-items: start; }
+.rail { position: sticky; top: 24px; font: 12.5px/1 var(--mono); }
+.rail ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--hairline); }
+.rail li { margin: 0; }
+.rail a { display: block; padding: 5px 0 5px 14px; color: var(--ink-2); border-left: 2px solid transparent; margin-left: -1px; }
+.rail a:hover { color: var(--accent-ink); text-decoration: none; }
+.rail .rail-num { display: inline-block; width: 26px; color: var(--accent); }
+.content { min-width: 0; max-width: 872px; }
+
+/* ---- hero ---- */
+.eyebrow { font: 600 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 14px; }
+h1 { font-size: 30px; line-height: 1.35; margin: 0 0 14px; letter-spacing: .01em; text-wrap: balance; }
+.lede { color: var(--ink-2); margin: 0 0 26px; max-width: 68ch; }
+.tldr { background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; padding: 20px 22px 10px; }
+.tldr-label { font: 600 11px/1 var(--mono); letter-spacing: .14em; color: var(--accent-ink); margin: 0 0 12px; }
+.tldr ol { margin: 0; padding: 0 0 10px; list-style: none; }
+.tldr li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--hairline); }
+.tldr li:first-child { border-top: none; }
+.tldr .no { font: 600 12.5px/1.9 var(--mono); color: var(--accent); }
+.tldr b { color: var(--ink); }
+
+/* ---- sections ---- */
+.sec { margin-top: 64px; padding-top: 26px; border-top: 1px solid var(--hairline); }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+.sec-num { font: 600 13px/1 var(--mono); color: var(--accent); letter-spacing: .06em; }
+h2 { font-size: 21px; line-height: 1.4; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.sec-lead { color: var(--ink-2); margin: 6px 0 22px; max-width: 70ch; }
+h3 { font-size: 15.5px; margin: 30px 0 10px; letter-spacing: .01em; }
+p { margin: 0 0 14px; }
+ul.tight { margin: 0 0 14px; padding-left: 20px; }
+ul.tight li { margin: 4px 0; }
+code { font: 12.8px/1 var(--mono); background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 4px; padding: 1px 5px; color: var(--accent-ink); }
+
+/* ---- callouts ---- */
+.callout { border-radius: 6px; padding: 12px 16px; margin: 18px 0; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.callout .tag { display: block; font: 600 11px/1 var(--mono); letter-spacing: .12em; color: var(--accent-ink); margin-bottom: 6px; }
+.callout p { margin: 0; }
+.callout.ok   { border-color: var(--pass);  background: var(--pass-soft); }
+.callout.ok .tag   { color: var(--pass); }
+.callout.warn { border-color: var(--warn);  background: var(--warn-soft); }
+.callout.warn .tag { color: var(--warn); }
+
+/* ---- tables ---- */
+.tbl-scroll { overflow-x: auto; margin: 18px 0 24px; border: 1px solid var(--hairline); border-radius: 8px; background: var(--surface); }
+table.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+.tbl th { font: 600 11px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--hairline); background: var(--surface-2); white-space: nowrap; }
+.tbl td { padding: 10px 14px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+
+/* ---- state machine chips ---- */
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 22px; }
+.chip { font: 600 12px/1 var(--mono); padding: 7px 13px; border-radius: 999px; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink); }
+.chip.ok   { background: var(--pass-soft); border-color: var(--pass); color: var(--pass); }
+.chip.bad  { background: var(--fail-soft); border-color: var(--fail); color: var(--fail); }
+.chip.warn { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.flow .arr { color: var(--ink-2); font: 13px/1 var(--mono); }
+
+/* ---- roadmap cards ---- */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 18px 0 8px; }
+.card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; padding: 18px; }
+.card .phase { font: 600 12px/1 var(--mono); color: var(--accent); letter-spacing: .08em; }
+.card h4 { margin: 8px 0 10px; font-size: 15px; }
+.card ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+.card li { margin: 5px 0; }
+.card .due { font: 11.5px/1 var(--mono); color: var(--ink-2); background: var(--surface-2); border-radius: 4px; padding: 3px 7px; display: inline-block; margin-top: 10px; }
+
+/* ---- figures ---- */
+figure { margin: 26px 0 30px; }
+figure svg { max-width: 100%; height: auto; display: block; }
+figcaption { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; line-height: 1.6; }
+
+/* SVG diagram classes */
+.d-band { fill: var(--surface-2); stroke: var(--hairline); }
+.d-box  { fill: var(--surface); stroke: var(--hairline); }
+.d-t1   { fill: var(--ink); font: 600 13px/1.3 var(--sans); }
+.d-t2   { fill: var(--ink-2); font: 11.5px/1.3 var(--sans); }
+.d-l1   { fill: var(--ink); font: 600 14px/1 var(--sans); }
+.d-l2   { fill: var(--ink-2); font: 10.5px/1 var(--mono); letter-spacing: .06em; }
+.d-lbl  { fill: var(--ink-2); font: 11.5px/1.3 var(--sans); }
+.d-flow { stroke: var(--accent); }
+.d-chip { fill: var(--accent-soft); stroke: var(--accent); }
+.d-chipt { fill: var(--accent-ink); font: 600 12px/1 var(--mono); }
+
+/* ---- footer ---- */
+.foot { border-top: 1px solid var(--hairline); margin-top: 64px; padding-top: 20px; font-size: 12.5px; color: var(--ink-2); }
+.foot ul { list-style: none; margin: 10px 0 0; padding: 0; font-family: var(--mono); font-size: 12px; line-height: 2; }
+.foot li { overflow-wrap: anywhere; }
+
+/* ---- responsive ---- */
+@media (max-width: 1080px) {
+  .wrap { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; margin-bottom: 26px; }
+  .rail ul { display: flex; flex-wrap: wrap; gap: 4px; border-left: none; }
+  .rail a { border-left: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 4px 12px; margin: 0; background: var(--surface); }
+  .cards { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-in">
+    <span class="wordmark">EasyRun <b>UI Agent</b></span>
+    <div class="masthead-right">
+      <span class="meta" data-l="doc.meta">平台架构方案 v0.3 · 2026-08-15 · 状态：实现中 · DeepSeek API + 本地开源</span>
+      <button id="lang-btn" class="lang-btn">EN</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="rail" aria-label="文档导航">
+    <ul>
+      <li><a href="#s1" data-anchor="s1"><span class="rail-num">01</span><span data-l="toc.1">设计目标与原则</span></a></li>
+      <li><a href="#s2" data-anchor="s2"><span class="rail-num">02</span><span data-l="toc.2">总体架构</span></a></li>
+      <li><a href="#s3" data-anchor="s3"><span class="rail-num">03</span><span data-l="toc.3">多 Agent 执行机制</span></a></li>
+      <li><a href="#s4" data-anchor="s4"><span class="rail-num">04</span><span data-l="toc.4">Agent 执行引擎</span></a></li>
+      <li><a href="#s5" data-anchor="s5"><span class="rail-num">05</span><span data-l="toc.5">报告中心</span></a></li>
+      <li><a href="#s6" data-anchor="s6"><span class="rail-num">06</span><span data-l="toc.6">技术栈选型</span></a></li>
+      <li><a href="#s7" data-anchor="s7"><span class="rail-num">07</span><span data-l="toc.7">数据模型</span></a></li>
+      <li><a href="#s8" data-anchor="s8"><span class="rail-num">08</span><span data-l="toc.8">实施路线图</span></a></li>
+      <li><a href="#s9" data-anchor="s9"><span class="rail-num">09</span><span data-l="toc.9">风险与对策</span></a></li>
+      <li><a href="#ref" data-anchor="ref"><span class="rail-num">↳</span><span data-l="toc.ref">参考资料</span></a></li>
+    </ul>
+  </nav>
+
+  <main class="content">
+
+    <!-- ================= 中文 ================= -->
+    <div id="doc-zh" class="doc-lang">
+
+    <header>
+      <p class="eyebrow">UI 测试平台 · 技术架构方案</p>
+      <h1>基于 AI Agent 的 UI 自动化测试平台</h1>
+      <p class="lede">以 AI Agent 为核心执行单元的测试平台：用例以自然语言描述，由多个测试 Agent 并行执行，每一步都留痕，报告实时可看、失败可归因。LLM 调用 <b>DeepSeek 官方 API</b>（低定价、免 GPU 运维），其余组件全部<b>开源、本地部署</b>，不依赖任何其他付费服务。方案面向 2026 年的框架生态：Playwright 已内置面向 Agent 的接口（v1.60 的 <code>boxes</code>），MCP 已成为 Agent 接入工具的标准协议。</p>
+
+      <div class="tldr">
+        <p class="tldr-label">结论先行</p>
+        <ol>
+          <li><span class="no">01</span><div><b>执行内核双轨。</b>回归用例跑确定性 Playwright / Appium 脚本；探索性用例、自愈、异常处理交给 LLM Agent。2026 年行业共识：Agentic 是对确定性自动化的补充，而非替代。</div></li>
+          <li><span class="no">02</span><div><b>工具层 MCP 标准化。</b>浏览器、移动端、断言能力封装为 MCP Server，LLM 可替换而工具契约稳定。</div></li>
+          <li><span class="no">03</span><div><b>多 Agent = Master-Worker + 任务队列。</b>Master 拆解测试计划，Worker 容器化、无状态、按浏览器实例水平扩容。</div></li>
+          <li><span class="no">04</span><div><b>报告 = 步骤级事件流。</b>每一步（工具调用、LLM 决策、断言结果、截图）作为事件实时上报，报告中心聚合为时间轴报告并做 AI 失败归因。</div></li>
+          <li><span class="no">05</span><div><b>起步选型。</b>Playwright ≥ 1.60 + Appium 2.0 + Python/FastAPI + Redis 队列 + PostgreSQL/MinIO；Agent 循环用自研轻量循环（OpenAI 兼容协议）；LLM 调用 DeepSeek 官方 API——<code>deepseek-chat</code> 做日常动作决策、<code>deepseek-reasoner</code> 做拆解 / 归因等复杂推理，接口可随时降级为本地开源权重。</div></li>
+        </ol>
+      </div>
+    </header>
+
+    <section class="sec" id="s1">
+      <div class="sec-head"><span class="sec-num">01</span><h2>设计目标与原则</h2></div>
+      <p class="sec-lead">行业现状：约 80% 的 UI 用例生命周期被 locator 修复、超时与环境问题占据；Appium 类方案 flakiness 普遍在 15% 以上。平台的核心命题是把 AI 能力用在维护成本最高的环节。</p>
+
+      <h3>目标</h3>
+      <ul class="tight">
+        <li><b>多 Agent 并行执行</b>——用例级任务分发，Agent 池水平扩容，账号 / 设备等共享资源受控编排。</li>
+        <li><b>报告生成与查看</b>——步骤级 trace、截图 / 视频、LLM 决策轨迹；执行中实时聚合，事后趋势与基线对比。</li>
+        <li><b>降低维护成本</b>——locator 失效自愈、自然语言生成用例、失败模式知识库复用。</li>
+        <li><b>可信执行</b>——断言由确定性代码校验（LLM 只负责路径选择，不负责下结论）；全程留痕，失败可归因。</li>
+        <li><b>成本可控</b>——LLM 走 DeepSeek 官方 API（低定价、无 GPU 运维）；其余组件全部开源、可自托管。</li>
+      </ul>
+
+      <h3>原则</h3>
+      <ul class="tight">
+        <li><b>混合执行</b>：确定性脚本（快、稳、便宜）与 Agentic 执行（自适应、可探索）按用例模式路由。</li>
+        <li><b>MCP 标准化</b>：所有自动化能力通过 MCP 暴露，Agent 与框架解耦。</li>
+        <li><b>无状态 Agent</b>：执行状态在队列与数据库中，Worker 可随时重建，扩容与故障恢复简单。</li>
+        <li><b>留痕优先</b>：每个决策与动作都是可检索的事件——报告、审计、失败知识库共用同一条事件流。</li>
+        <li><b>本地优先</b>：除 LLM 外全部组件开源、可自托管（Apache-2.0 / MIT / BSD）；模型接口走 OpenAI 兼容协议，DeepSeek API 与本地开源权重（Qwen3 等）可互换降级。</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s2">
+      <div class="sec-head"><span class="sec-num">02</span><h2>总体架构</h2></div>
+      <p class="sec-lead">五层结构。控制流自上而下（提交 → 编排 → 分发 → 执行），事件流自 Agent 直通数据层——报告系统挂在事件流上，而不是事后扫描结果表。</p>
+
+      <figure>
+        <svg viewBox="0 0 950 640" role="img" aria-label="平台总体架构：接入层、编排层、执行层、能力层、数据与报告层五层结构，控制流自上而下，步骤事件流从执行层直通报告中心">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+
+          <!-- 接入层 -->
+          <rect class="d-band" x="124" y="20" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="46" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="46" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="46" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="68" text-anchor="middle">Web 控制台</text>
+          <text class="d-t2" x="252" y="86" text-anchor="middle">用例 · 任务 · 报告</text>
+          <text class="d-t1" x="516" y="68" text-anchor="middle">OpenAPI / SDK</text>
+          <text class="d-t2" x="516" y="86" text-anchor="middle">程序化接入</text>
+          <text class="d-t1" x="780" y="68" text-anchor="middle">CI 插件</text>
+          <text class="d-t2" x="780" y="86" text-anchor="middle">流水线触发执行</text>
+
+          <!-- 编排层 -->
+          <rect class="d-band" x="124" y="148" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="174" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="174" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="174" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="196" text-anchor="middle">Master Agent</text>
+          <text class="d-t2" x="252" y="214" text-anchor="middle">计划拆解 · 汇总</text>
+          <text class="d-t1" x="516" y="196" text-anchor="middle">任务队列</text>
+          <text class="d-t2" x="516" y="214" text-anchor="middle">Redis Streams</text>
+          <text class="d-t1" x="780" y="196" text-anchor="middle">资源调度器</text>
+          <text class="d-t2" x="780" y="214" text-anchor="middle">账号 · 设备锁 · 优先级</text>
+
+          <!-- 执行层 -->
+          <rect class="d-band" x="124" y="276" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="302" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="302" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="302" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="324" text-anchor="middle">Agent Worker 1</text>
+          <text class="d-t2" x="252" y="342" text-anchor="middle">LLM + MCP + 浏览器实例</text>
+          <text class="d-t1" x="516" y="324" text-anchor="middle">Agent Worker 2</text>
+          <text class="d-t2" x="516" y="342" text-anchor="middle">同构实例</text>
+          <text class="d-t1" x="780" y="324" text-anchor="middle">Agent Worker N</text>
+          <text class="d-t2" x="780" y="342" text-anchor="middle">按队列深度扩容</text>
+
+          <!-- 能力层 -->
+          <rect class="d-band" x="124" y="404" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="430" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="430" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="430" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="452" text-anchor="middle">LLM 服务</text>
+          <text class="d-t2" x="252" y="470" text-anchor="middle">DeepSeek API · 分级路由</text>
+          <text class="d-t1" x="516" y="452" text-anchor="middle">MCP 工具集</text>
+          <text class="d-t2" x="516" y="470" text-anchor="middle">Playwright · Appium · 视觉 · 数据</text>
+          <text class="d-t1" x="780" y="452" text-anchor="middle">元素库 &amp; 知识库</text>
+          <text class="d-t2" x="780" y="470" text-anchor="middle">自愈定位 · 失败模式（pgvector）</text>
+
+          <!-- 数据与报告层 -->
+          <rect class="d-band" x="124" y="532" width="776" height="96" rx="8"/>
+          <rect class="d-box" x="140" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="330" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="520" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="710" y="558" width="170" height="44" rx="6"/>
+          <text class="d-t1" x="225" y="582" text-anchor="middle">PostgreSQL</text>
+          <text class="d-t1" x="415" y="582" text-anchor="middle">Redis</text>
+          <text class="d-t1" x="605" y="582" text-anchor="middle">MinIO</text>
+          <text class="d-t1" x="795" y="582" text-anchor="middle">报告中心</text>
+          <text class="d-t2" x="225" y="596" text-anchor="middle">元数据 · 结果</text>
+          <text class="d-t2" x="415" y="596" text-anchor="middle">队列 · 缓存</text>
+          <text class="d-t2" x="605" y="596" text-anchor="middle">trace · 视频 · 截图</text>
+          <text class="d-t2" x="795" y="596" text-anchor="middle">聚合 · AI 归因</text>
+
+          <!-- 层标签 -->
+          <text class="d-l1" x="112" y="76" text-anchor="end">接入层</text>
+          <text class="d-l2" x="112" y="92" text-anchor="end">ACCESS</text>
+          <text class="d-l1" x="112" y="204" text-anchor="end">编排层</text>
+          <text class="d-l2" x="112" y="220" text-anchor="end">ORCHESTRATE</text>
+          <text class="d-l1" x="112" y="332" text-anchor="end">执行层</text>
+          <text class="d-l2" x="112" y="348" text-anchor="end">AGENTS</text>
+          <text class="d-l1" x="112" y="460" text-anchor="end">能力层</text>
+          <text class="d-l2" x="112" y="476" text-anchor="end">CAPABILITY</text>
+          <text class="d-l1" x="112" y="584" text-anchor="end">数据与报告</text>
+          <text class="d-l2" x="112" y="600" text-anchor="end">DATA + REPORT</text>
+
+          <!-- 控制流箭头 -->
+          <line class="d-flow" x1="180" y1="124" x2="180" y2="145" marker-end="url(#arr)"/>
+          <text class="d-lbl" x="194" y="140">提交测试计划</text>
+          <line class="d-flow" x1="180" y1="252" x2="180" y2="273" marker-end="url(#arr)"/>
+          <text class="d-lbl" x="194" y="268">分发用例任务</text>
+          <line class="d-flow" x1="180" y1="380" x2="180" y2="401" marker-end="url(#arr)"/>
+          <text class="d-lbl" x="194" y="396">工具调用 · 模型请求</text>
+          <line class="d-flow" x1="180" y1="508" x2="180" y2="529" marker-end="url(#arr)"/>
+          <text class="d-lbl" x="194" y="524">元数据 · 工件写入</text>
+
+          <!-- 事件流（右轨） -->
+          <path class="d-flow" d="M 900 328 H 928 V 574 H 884" fill="none" marker-end="url(#arr)"/>
+          <text class="d-lbl" x="938" y="460" text-anchor="middle" transform="rotate(-90 938 460)">步骤事件流（实时上报）</text>
+        </svg>
+        <figcaption>总体架构：控制流自上而下四跳；Agent 的步骤事件流走右侧直通数据层——报告中心订阅事件流即可实时呈现，无需轮询结果表。</figcaption>
+      </figure>
+
+      <h3>两层控制语义</h3>
+      <div class="callout"><span class="tag">控制流</span><p>接入层提交测试计划 → Master Agent 拆解为用例任务并入队 → 调度器按资源可用性分发 → Worker 执行。控制流是低频的、可重试的。</p></div>
+      <div class="callout ok"><span class="tag">事件流</span><p>Worker 的每一步动作（工具调用、LLM 决策、断言结果、截图、视频片段）都是高频事件，直接写入消息总线。报告中心订阅总线实时聚合；同一份事件流回放即可重建任意历史报告，也可喂给失败知识库。</p></div>
+    </section>
+
+    <section class="sec" id="s3">
+      <div class="sec-head"><span class="sec-num">03</span><h2>多 Agent 执行机制</h2></div>
+      <p class="sec-lead">Master-Worker 模型：一个 Master Agent 负责拆解与调度，N 个 Worker Agent 负责执行。两者职责分离，Worker 保持无状态。</p>
+
+      <h3>Master 与 Worker</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:140px">角色</th><th>职责</th><th style="width:220px">技术形态</th></tr>
+        <tr><td>Master Agent</td><td>测试计划 → 用例任务拆解；按依赖关系排序；申请账号 / 设备资源；汇总各任务结果生成计划级结论</td><td>LLM Agent + 调度 API 工具（低频调用）</td></tr>
+        <tr><td>Worker Agent</td><td>领取单个用例任务，驱动浏览器 / 设备执行；产出步骤事件流；失败时自愈重试</td><td>容器内 LLM Agent + MCP Client + Playwright / Appium 运行时</td></tr>
+        <tr><td>调度器</td><td>任务队列、优先级、重试、资源锁；Worker 心跳与回收</td><td>确定性代码，不含 LLM</td></tr>
+      </table></div>
+      <div class="callout"><span class="tag">决策</span><p>调度器必须是确定性代码。LLM 只出现在 Master（拆解）和 Worker（执行路径选择）两处——队列、重试、资源锁这些环节引入 LLM 只会增加不确定性，没有收益。</p></div>
+
+      <h3>任务状态机</h3>
+      <div class="flow">
+        <span class="chip">queued</span><span class="arr">→</span>
+        <span class="chip">assigned</span><span class="arr">→</span>
+        <span class="chip">running</span><span class="arr">→</span>
+        <span class="chip ok">passed</span>
+        <span class="chip bad">failed</span><span class="arr">→</span>
+        <span class="chip">retrying</span><span class="arr">→</span>
+        <span class="chip warn">quarantined</span>
+      </div>
+      <p>每个用例是一个可重试的任务。失败后自动重试（携带上一次的 Agent 上下文与失败事件），连续失败超过阈值进入 <code>quarantined</code> 隔离区，不再占用常规资源，由人工或知识库修复后重新入队。</p>
+
+      <h3>并发与容错</h3>
+      <ul class="tight">
+        <li><b>扩容单元 = 浏览器实例。</b>一个 Worker 容器跑一个浏览器会话，K8s HPA 按队列深度伸缩——与 Agent 数量解耦，资源模型简单。</li>
+        <li><b>共享资源锁。</b>账号、测试数据、设备等互斥资源用 Redis 分布式锁排队，避免两个 Agent 抢同一账号。</li>
+        <li><b>心跳回收。</b>调度器 watchdog 检测 Worker 心跳超时即回收任务重新入队；任务结果幂等上报（按 <code>task_id + attempt</code> 去重）。</li>
+        <li><b>执行上限。</b>每个任务有步骤数、时长与推理 token 三重上限（平台侧强制），防止 Agent 失控烧算力。</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s4">
+      <div class="sec-head"><span class="sec-num">04</span><h2>测试 Agent 执行引擎</h2></div>
+      <p class="sec-lead">Worker 内部是一个「观察 → 决策 → 行动 → 校验」循环。关键选型：用 Playwright 1.60 的 <code>boxes</code>（带坐标的 ARIA 快照）替代逐屏截图做视觉推理——文本化、便宜、快一个数量级；截图只用于报告留痕与视觉断言。</p>
+
+      <figure>
+        <svg viewBox="0 0 950 300" role="img" aria-label="测试 Agent 执行循环：观察、决策、行动、校验四步，校验失败走自愈路径回到观察，步骤事件实时上报报告中心">
+          <defs>
+            <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+          <rect class="d-box" x="50" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="272" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="494" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="716" y="96" width="177" height="84" rx="8"/>
+          <text class="d-t1" x="138" y="130" text-anchor="middle">观察</text>
+          <text class="d-t2" x="138" y="154" text-anchor="middle">DOM · ARIA 快照</text>
+          <text class="d-t2" x="138" y="169" text-anchor="middle">Playwright boxes</text>
+          <text class="d-t1" x="360" y="130" text-anchor="middle">决策</text>
+          <text class="d-t2" x="360" y="154" text-anchor="middle">LLM 选择</text>
+          <text class="d-t2" x="360" y="169" text-anchor="middle">下一步动作</text>
+          <text class="d-t1" x="582" y="130" text-anchor="middle">行动</text>
+          <text class="d-t2" x="582" y="154" text-anchor="middle">MCP 工具调用</text>
+          <text class="d-t2" x="582" y="169" text-anchor="middle">点击 · 输入 · 断言</text>
+          <text class="d-t1" x="804" y="130" text-anchor="middle">校验</text>
+          <text class="d-t2" x="804" y="154" text-anchor="middle">确定性断言</text>
+          <text class="d-t2" x="804" y="169" text-anchor="middle">视觉比对</text>
+
+          <line class="d-flow" x1="227" y1="138" x2="269" y2="138" marker-end="url(#arr2)"/>
+          <text class="d-lbl" x="248" y="128" text-anchor="middle">快照</text>
+          <line class="d-flow" x1="449" y1="138" x2="491" y2="138" marker-end="url(#arr2)"/>
+          <text class="d-lbl" x="470" y="128" text-anchor="middle">动作计划</text>
+          <line class="d-flow" x1="671" y1="138" x2="713" y2="138" marker-end="url(#arr2)"/>
+          <text class="d-lbl" x="692" y="128" text-anchor="middle">结果</text>
+
+          <path class="d-flow" d="M 746 180 C 746 222, 138 222, 138 180" fill="none" marker-end="url(#arr2)"/>
+          <text class="d-lbl" x="442" y="244" text-anchor="middle">通过 → 下一步；失败 → 自愈重定位（更新元素库后重试）</text>
+
+          <line class="d-flow" x1="804" y1="180" x2="804" y2="230" marker-end="url(#arr2)"/>
+          <rect class="d-chip" x="700" y="232" width="208" height="34" rx="17"/>
+          <text class="d-chipt" x="804" y="253" text-anchor="middle">步骤事件 → 报告中心</text>
+        </svg>
+        <figcaption>Agent 执行循环。校验是确定性的：断言由 Playwright 代码执行，LLM 只负责「下一步做什么」——LLM 不直接下通过 / 失败结论。</figcaption>
+      </figure>
+
+      <h3>工具集（MCP 封装）</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:200px">工具</th><th>能力</th><th style="width:260px">实现</th></tr>
+        <tr><td><code>browser_*</code></td><td>导航、点击、输入、等待、截图、读取 ARIA 快照</td><td>Playwright MCP Server（官方，MIT）</td></tr>
+        <tr><td><code>mobile_*</code></td><td>移动端同类能力</td><td>Appium 2.0 自封装 MCP Server（Apache-2.0）</td></tr>
+        <tr><td><code>assert_*</code></td><td>文本 / 元素 / 属性断言，返回结构化结果</td><td>确定性代码，非 LLM 判断</td></tr>
+        <tr><td><code>visual_diff</code></td><td>截图与基线比对，输出差异区域</td><td>pixelmatch（MIT）/ 自研，失败时把差异图交给视觉模型判断是否为预期变化</td></tr>
+        <tr><td><code>data_*</code></td><td>造数、API 请求、数据库校验</td><td>平台服务侧工具</td></tr>
+      </table></div>
+
+      <h3>两种执行模式</h3>
+      <ul class="tight">
+        <li><b>探索模式（agentic）</b>：自然语言用例直接交给 Agent 执行，路径由 LLM 现场决策。适合新用例验证、偶发路径、异常场景。</li>
+        <li><b>固化模式（deterministic）</b>：Agent 探索通过的路径固化为 Playwright spec / pytest 脚本，后续回归走确定性执行——快、稳、便宜。探索一次，固化长期。</li>
+      </ul>
+
+      <h3>模型路由、自愈与上下文优化</h3>
+      <ul class="tight">
+        <li><b>模型服务</b>：LLM 调用 DeepSeek 官方 API（OpenAI 兼容协议）。<code>deepseek-chat</code> 负责高频动作决策（JSON 输出模式，快且便宜）；<code>deepseek-reasoner</code> 负责低频复杂推理——计划拆解、失败归因、自愈重定位。接口层抽象后，可随时降级为本地开源权重（Qwen3 经 Ollama / vLLM，协议不变）。</li>
+        <li><b>自愈</b>：locator 失效 → LLM 依据快照重新定位 → 新定位写入元素库（与应用版本绑定）→ 回归直接复用。元素库标注来源（人工 / 自愈），自愈定位需通过一次回归验证后才转正。</li>
+        <li><b>上下文优化</b>：DOM 快照只保留可交互元素与必要文本，历史步骤滚动裁剪，防止长用例上下文膨胀；每步 token 用量入账，报告中心呈现算力成本。</li>
+      </ul>
+      <div class="callout"><span class="tag">决策</span><p>Agent 循环采用自研轻量循环（基于 OpenAI 兼容协议 + JSON 动作协议），每轮的 hooks 就是事件留痕点，报告与审计从这里长出；browser-use（MIT）与 LangGraph 作为演进备选。工具层 v1 实现为内部工具注册表（与 MCP 工具契约对齐），后续可平滑切换到官方 Playwright MCP Server。</p></div>
+    </section>
+
+    <section class="sec" id="s5">
+      <div class="sec-head"><span class="sec-num">05</span><h2>报告中心</h2></div>
+      <p class="sec-lead">报告不是执行后的产物，而是事件流的投影：执行中即可看，执行完可回放。</p>
+
+      <h3>事件流</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:200px">事件</th><th>内容</th><th style="width:240px">报告呈现</th></tr>
+        <tr><td><code>step_started</code></td><td>步骤目标、序号、Agent 上下文摘要</td><td>时间轴节点</td></tr>
+        <tr><td><code>llm_decision</code></td><td>LLM 选择该动作的理由摘要</td><td>「为什么点这里」展开面板</td></tr>
+        <tr><td><code>tool_call</code></td><td>工具名、参数、耗时、结果摘要</td><td>时间轴内联卡片</td></tr>
+        <tr><td><code>screenshot</code></td><td>截图 + DOM / ARIA 快照，MinIO 工件引用</td><td>步骤缩略图，点击放大</td></tr>
+        <tr><td><code>assertion</code></td><td>断言表达式与实际值</td><td>通过 / 失败标记</td></tr>
+        <tr><td><code>video_segment</code></td><td>Playwright screencast 视频段</td><td>整段回放</td></tr>
+        <tr><td><code>step_failed</code></td><td>异常、失败瞬间快照、重试决策</td><td>红色高亮 + 失败分析链接</td></tr>
+      </table></div>
+
+      <h3>报告形态</h3>
+      <ul class="tight">
+        <li><b>实时 Web 报告</b>：用例时间轴 + 截图 / 快照 / 视频 + LLM 决策轨迹 + 断言结果，执行中逐步点亮。</li>
+        <li><b>AI 失败归因</b>：执行结束后由分析 Agent 把失败归类为五类——产品缺陷 / 环境问题 / 用例设计问题 / locator 漂移 / Agent 误判，并自动生成缺陷草稿（含复现步骤与证据引用），确认后一键推缺陷系统。归因结果写入失败知识库，同类失败再次出现时直接引用历史结论。</li>
+        <li><b>Allure 兼容导出</b>：把事件流转换为 Allure 格式导出（Apache-2.0），兼容团队既有报告流程与 CI 集成；如已有 ReportPortal 基建（Apache-2.0，自托管），也可作为聚合后端。</li>
+        <li><b>趋势面板</b>：通过率、flakiness（用例级重跑率）、执行时长、推理成本（GPU 时 / token 量）四个核心指标；版本间基线对比（新版本 vs 基线截图 / 通过率回归标记）。</li>
+      </ul>
+      <div class="callout"><span class="tag">决策</span><p>首选自研 Web 报告（实时性 + AI 归因是差异化能力），Allure 只做导出兼容而非主报告——避免被第三方报告格式束缚事件模型的表达能力。</p></div>
+    </section>
+
+    <section class="sec" id="s6">
+      <div class="sec-head"><span class="sec-num">06</span><h2>技术栈选型</h2></div>
+      <p class="sec-lead">2026 年的选型基线：Web 选 Playwright（官方 MCP Server、v1.60 <code>boxes</code> 面向 Agent 设计），移动选 Appium 2.0（仍是原生移动 E2E 的开放标准，暂无 AI 原生替代）。全表组件均为开源，协议标注于选型后。</p>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:150px">层次</th><th style="width:270px">推荐（协议）</th><th>理由</th><th style="width:180px">备选</th></tr>
+        <tr><td>Web 内核</td><td><b>Playwright ≥ 1.60</b>（Apache-2.0）+ 官方 Playwright MCP（MIT）</td><td>boxes（带坐标 ARIA 快照）为 Agent 设计；screencast 视频；trace 原生；跨 Chromium/Firefox/WebKit</td><td>Selenium 4 + BiDi（存量团队）</td></tr>
+        <tr><td>移动内核</td><td><b>Appium 2.0</b>（Apache-2.0，UiAutomator2 / XCUITest）</td><td>双平台统一 API；生态最全；自封装 MCP Server 成本低</td><td>Maestro（轻量冒烟）</td></tr>
+        <tr><td>Agent 循环</td><td><b>自研轻量循环</b> + JSON 动作协议 + Playwright</td><td>自持循环的每轮 hooks 即事件留痕点；OpenAI 兼容协议，模型可插拔；无闭源依赖</td><td>browser-use（MIT，快速原型 / 参考实现）、LangGraph（MIT）</td></tr>
+        <tr><td>模型服务</td><td><b>DeepSeek 官方 API</b>（deepseek-chat / deepseek-reasoner）</td><td>低定价、免 GPU 运维；JSON 输出模式适合动作协议；OpenAI 兼容接口，可随时降级本地开源权重</td><td>本地 Qwen3 + Ollama / vLLM（协议不变）</td></tr>
+        <tr><td>后端</td><td><b>Python 3.12 + FastAPI</b>（MIT）</td><td>AI 生态最全；与 pytest-playwright 固化产物同栈；async 原生</td><td>Node.js / TypeScript</td></tr>
+        <tr><td>任务编排</td><td><b>Redis + Arq</b>（MIT）起步，规模化后迁 <b>Temporal</b>（MIT，自托管）</td><td>P0 轻量即可跑；复杂重试 / 工作流 / 补偿用 Temporal 语义更完整</td><td>Celery（BSD）</td></tr>
+        <tr><td>前端</td><td><b>静态 SPA 控制台</b>（零依赖零构建，开箱即用）</td><td>无需 Node 环境即可运行；由后端直接托管；时间轴 / 表格视图自研实现</td><td>React + Ant Design（MIT，规模化后重构路径）</td></tr>
+        <tr><td>存储</td><td><b>PostgreSQL 16</b>（PostgreSQL 协议，+ pgvector）+ <b>Redis</b> + <b>MinIO</b>（AGPL-3.0）</td><td>元数据 + 向量检索（失败知识库）+ 对象存储一体；自托管可控</td><td>MySQL、SeaweedFS</td></tr>
+        <tr><td>报告</td><td><b>自研 Web 报告</b> + <b>Allure</b>（Apache-2.0）导出</td><td>实时 + AI 归因是核心能力，不被第三方格式束缚</td><td>ReportPortal（Apache-2.0，自托管）</td></tr>
+        <tr><td>可观测</td><td><b>OpenTelemetry</b>（Apache-2.0）+ Prometheus / Grafana（自托管）</td><td>LLM 调用链路与算力消耗可见是 AI 平台的刚需</td><td>自研埋点</td></tr>
+        <tr><td>部署</td><td><b>Docker + K8s</b>（Apache-2.0）</td><td>Worker 池 HPA、会话隔离、镜像化浏览器</td><td>Docker Compose（P0 阶段）</td></tr>
+      </table></div>
+
+      <div class="callout"><span class="tag">本地优先的边界</span><p>除 LLM 外所有组件开源、可自托管、无许可费。LLM 按既定决策调用 DeepSeek 官方 API（低定价、免 GPU 运维）；所有模型接口保持 OpenAI 兼容——若需数据合规或离线运行，在网关处替换为本地开源权重（Qwen3 + Ollama / vLLM）即可，平台代码零改造。</p></div>
+      <div class="callout warn"><span class="tag">取舍说明</span><p>本方案自托管执行（Worker 跑在自有容器里驱动本地浏览器），而非依赖托管浏览器云（Browserbase 等）或托管 Agent 平台——测试目标通常是内网环境，出网托管不适用；同时也与「开源优先」一致。若目标站是公网且团队小，托管方案可作为 P0 的降本捷径，接口层保持一致即可迁移。</p></div>
+    </section>
+
+    <section class="sec" id="s7">
+      <div class="sec-head"><span class="sec-num">07</span><h2>数据模型</h2></div>
+      <p class="sec-lead">核心实体八个，全部以 PostgreSQL 为主存储；事件与工件走 MinIO。</p>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:190px">实体</th><th>关键字段</th><th>说明</th></tr>
+        <tr><td><code>test_case</code></td><td><code>mode</code>（agentic / deterministic）、<code>steps</code>（JSON）、版本号</td><td>用例可被 LLM 生成、可固化；版本化以支持基线对比</td></tr>
+        <tr><td><code>test_plan</code></td><td>用例集、依赖关系、调度策略、触发方式</td><td>Master 的输入；支持 CI 触发与定时</td></tr>
+        <tr><td><code>test_run</code></td><td>plan 引用、被测环境与版本、起止时间、汇总状态</td><td>一次完整执行</td></tr>
+        <tr><td><code>test_task</code></td><td>run / case 引用、状态机状态、重试次数、agent 标识</td><td>队列中的任务单元，幂等键 <code>task_id + attempt</code></td></tr>
+        <tr><td><code>agent_session</code></td><td>task 引用、worker 标识、浏览器会话、推理用量（token / 耗时）</td><td>算力统计与审计来源</td></tr>
+        <tr><td><code>step_event</code></td><td>session 引用、事件类型、时间戳、payload、工件引用</td><td>事件流落库，报告与回放的唯一事实源</td></tr>
+        <tr><td><code>locator_repository</code></td><td>应用 / 页面 / 元素、定位策略、绑定版本、来源（人工 / 自愈）</td><td>自愈产物的持久化载体</td></tr>
+        <tr><td><code>failure_analysis</code></td><td>run 引用、归因类型、缺陷草稿、置信度</td><td>AI 归因结果，沉淀为失败知识库（pgvector 索引）</td></tr>
+      </table></div>
+    </section>
+
+    <section class="sec" id="s8">
+      <div class="sec-head"><span class="sec-num">08</span><h2>实施路线图</h2></div>
+      <p class="sec-lead">三期推进，每一期都以可用的闭环收口，而不是一次性搭全量架构。</p>
+
+      <div class="cards">
+        <div class="card">
+          <span class="phase">P0 · 单 Agent 跑通</span>
+          <h4>验证核心假设</h4>
+          <ul>
+            <li>DeepSeek API + Playwright + 轻量循环</li>
+            <li>10 条真实用例，探索模式执行</li>
+            <li>JSON 报告 + 截图留痕</li>
+            <li>验证：Agent 能否稳定完成多步用例？单条推理成本多少？</li>
+          </ul>
+          <span class="due">2–3 周</span>
+        </div>
+        <div class="card">
+          <span class="phase">P1 · 平台化</span>
+          <h4>多 Agent + 报告中心</h4>
+          <ul>
+            <li>用例管理（NL 编写 + 版本化）</li>
+            <li>Redis 队列 + Master-Worker，K8s Worker 池</li>
+            <li>deepseek-chat / reasoner 分级路由</li>
+            <li>事件流总线 + 实时 Web 报告</li>
+            <li>元素库 + 失败重试与 quarantine</li>
+          </ul>
+          <span class="due">4–6 周</span>
+        </div>
+        <div class="card">
+          <span class="phase">P2 · 智能化</span>
+          <h4>自愈与沉淀</h4>
+          <ul>
+            <li>locator 自愈闭环（探测 → 更新 → 验证转正）</li>
+            <li>固化模式：探索路径生成 Playwright spec</li>
+            <li>AI 失败归因 + 缺陷草稿 + 失败知识库</li>
+            <li>视觉回归、移动端 Agent、Allure 导出、CI 集成</li>
+          </ul>
+          <span class="due">持续迭代</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="s9">
+      <div class="sec-head"><span class="sec-num">09</span><h2>风险与对策</h2></div>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:150px">风险</th><th>影响</th><th style="width:380px">对策</th></tr>
+        <tr><td>LLM API 依赖</td><td>网络波动 / 服务不可用 / 密钥泄露风险</td><td>接口抽象 + 指数退避重试；密钥只存服务端环境变量；协议 OpenAI 兼容，可降级本地开源权重兜底</td></tr>
+        <tr><td>API 成本</td><td>LLM 调用量随用例数线性增长</td><td>DeepSeek 低定价；deepseek-chat / reasoner 分级路由；DOM 快照裁剪 + token 上限；固化模式把高频用例移出 LLM</td></tr>
+        <tr><td>LLM 不确定性</td><td>误判通过 / 失败，路径漂移</td><td>断言由确定性代码执行；关键回归固化；探索模式的结论标注「AI 执行」并支持人工确认</td></tr>
+        <tr><td>安全与合规</td><td>Agent 接触敏感页面数据与账号，页面内容经 API 外发</td><td>Worker 容器隔离 + 网络白名单；敏感数据在模型请求侧脱敏；合规要求高时切换本地开源权重；全量审计事件</td></tr>
+        <tr><td>稳定性</td><td>Agent 卡死、Worker 崩溃、结果丢失</td><td>watchdog 心跳回收、幂等上报、任务级重试、quarantine 隔离、步骤数 / 时长上限</td></tr>
+        <tr><td>效果预期落差</td><td>「AI 测试」宣传与实际能力差距</td><td>P0 先拿 10 条真实用例验证成功率与成本，达标再扩——效果数据先于平台投入</td></tr>
+      </table></div>
+    </section>
+
+    <footer class="foot" id="ref">
+      <p><b>参考资料</b>（2026-08 检索）</p>
+      <ul>
+        <li>Playwright 1.59/1.60 迭代与 boxes 接口 —— <a href="https://cloud.tencent.cn/developer/article/2683110">腾讯云开发者 · 测试早报 6 月 5 日</a></li>
+        <li>2026 跨平台测试工具对比（Web / 移动 / 云）—— <a href="https://www.drizz.dev/post/best-cross-platform-testing-tools">Drizz · Best Cross Platform Testing Tools 2026</a></li>
+        <li>2026 开源自动化测试工具格局 —— <a href="https://bugbug.io/blog/test-automation-tools/open-source-test-automation-tools/">BugBug · Open Source Test Automation Tools 2026</a></li>
+        <li>AI 浏览器自动化分层（Playwright / Stagehand / Browser Use / MCP）—— <a href="https://fastcrw.com/blog/browser-automation-ai-agents">Browser Automation for AI Agents (2026)</a></li>
+        <li>browser-use（Python / TypeScript 双实现与 MCP 模式）—— <a href="https://github.com/webllm/browser-use">github.com/webllm/browser-use</a></li>
+        <li>Agentic UI Testing codelab（Gemini CLI + BrowserMCP + Playwright）—— <a href="https://github.com/derailed-dash/agentic-ui-testing">github.com/derailed-dash/agentic-ui-testing</a></li>
+        <li>传统框架维护成本与 Skill 范式讨论 —— <a href="https://developer.aliyun.com/article/1733767">阿里云开发者社区 · Skill 技术正在瓦解传统自动化框架</a></li>
+        <li>vLLM（开源推理引擎，prefix caching / 动态批处理）—— <a href="https://github.com/vllm-project/vllm">github.com/vllm-project/vllm</a></li>
+        <li>Ollama（本地模型运行，OpenAI 兼容接口）—— <a href="https://ollama.com">ollama.com</a></li>
+        <li>DeepSeek API 官方文档（chat / reasoner 模型与 JSON 输出模式）—— <a href="https://api-docs.deepseek.com">api-docs.deepseek.com</a></li>
+        <li>Qwen 开源模型系列（本地降级备选）—— <a href="https://github.com/QwenLM/Qwen3">github.com/QwenLM/Qwen3</a></li>
+      </ul>
+    </footer>
+
+    </div>
+
+    <!-- ================= English ================= -->
+    <div id="doc-en" class="doc-lang" hidden>
+
+    <header>
+      <p class="eyebrow">UI Testing Platform · Technical Architecture Proposal</p>
+      <h1>AI-Agent-Based UI Test Automation Platform</h1>
+      <p class="lede">A testing platform with AI agents as its core execution unit: cases are described in natural language, executed in parallel by multiple test agents, with every step logged, reports viewable in real time, and failures attributable. The LLM calls the <b>official DeepSeek API</b> (low pricing, no GPU ops); everything else is <b>open-source and self-hosted</b>, with no other paid services involved. The design targets the 2026 framework ecosystem: Playwright ships agent-facing interfaces (<code>boxes</code> in v1.60), and MCP has become the standard protocol for agents to access tools.</p>
+
+      <div class="tldr">
+        <p class="tldr-label">TL;DR</p>
+        <ol>
+          <li><span class="no">01</span><div><b>Dual-track execution kernel.</b> Regression cases run deterministic Playwright / Appium scripts; exploratory cases, self-healing and exception handling go to the LLM agent. The 2026 industry consensus: agentic complements deterministic automation — it does not replace it.</div></li>
+          <li><span class="no">02</span><div><b>Tool layer standardized via MCP.</b> Browser, mobile and assertion capabilities are wrapped as MCP servers — the LLM is swappable while the tool contract stays stable.</div></li>
+          <li><span class="no">03</span><div><b>Multi-agent = Master-Worker + task queue.</b> The Master decomposes test plans; workers are containerized, stateless, and scale horizontally by browser instance.</div></li>
+          <li><span class="no">04</span><div><b>Reports = a step-level event stream.</b> Every step (tool call, LLM decision, assertion result, screenshot) is reported in real time as an event; the report center aggregates events into a timeline report and performs AI failure attribution.</div></li>
+          <li><span class="no">05</span><div><b>Starting stack.</b> Playwright ≥ 1.60 + Appium 2.0 + Python/FastAPI + Redis queue + PostgreSQL/MinIO; a lightweight in-house agent loop (OpenAI-compatible protocol); LLM via the DeepSeek official API — <code>deepseek-chat</code> for day-to-day action decisions, <code>deepseek-reasoner</code> for complex reasoning like decomposition / attribution, with the interface downgradable to local open weights at any time.</div></li>
+        </ol>
+      </div>
+    </header>
+
+    <section class="sec" id="s1-en">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Goals &amp; Principles</h2></div>
+      <p class="sec-lead">Industry reality: roughly 80% of a UI case's lifecycle is consumed by locator fixes, timeouts and environment issues; Appium-style solutions commonly see flakiness above 15%. The platform's core proposition is applying AI where maintenance costs are highest.</p>
+
+      <h3>Goals</h3>
+      <ul class="tight">
+        <li><b>Multi-agent parallel execution</b> — case-level task distribution, horizontal scaling of the agent pool, controlled orchestration of shared resources (accounts / devices).</li>
+        <li><b>Report generation &amp; viewing</b> — step-level traces, screenshots / videos, LLM decision trails; real-time aggregation during execution, post-hoc trends and baseline comparison.</li>
+        <li><b>Lower maintenance cost</b> — locator self-healing, natural-language case generation, reusable failure-pattern knowledge base.</li>
+        <li><b>Trustworthy execution</b> — assertions verified by deterministic code (the LLM picks paths, never verdicts); full traceability, failures attributable.</li>
+        <li><b>Controlled cost</b> — LLM via the DeepSeek official API (low pricing, no GPU ops); everything else open-source and self-hostable.</li>
+      </ul>
+
+      <h3>Principles</h3>
+      <ul class="tight">
+        <li><b>Hybrid execution</b>: deterministic scripts (fast, stable, cheap) and agentic execution (adaptive, exploratory) routed by case mode.</li>
+        <li><b>MCP standardization</b>: all automation capabilities exposed via MCP, decoupling agents from frameworks.</li>
+        <li><b>Stateless agents</b>: execution state lives in the queue and database; workers can be rebuilt at any time — scaling and recovery stay simple.</li>
+        <li><b>Trace-first</b>: every decision and action is a searchable event — reports, audits and the failure knowledge base share one event stream.</li>
+        <li><b>Local-first</b>: everything except the LLM is open-source and self-hostable (Apache-2.0 / MIT / BSD); the model interface follows the OpenAI-compatible protocol, so the DeepSeek API and local open weights (Qwen3 etc.) are interchangeable fallbacks.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s2-en">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Overall Architecture</h2></div>
+      <p class="sec-lead">Five layers. The control flow goes top-down (submit → orchestrate → dispatch → execute); the event stream runs from agents straight to the data layer — the report system subscribes to the event stream instead of scanning result tables afterwards.</p>
+
+      <figure>
+        <svg viewBox="0 0 950 640" role="img" aria-label="Overall architecture: five layers — access, orchestration, execution, capability, data &amp; report. Control flow runs top-down; the step event stream flows from the execution layer straight to the report center">
+          <defs>
+            <marker id="arr-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+
+          <!-- access -->
+          <rect class="d-band" x="124" y="20" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="46" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="46" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="46" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="68" text-anchor="middle">Web Console</text>
+          <text class="d-t2" x="252" y="86" text-anchor="middle">cases · runs · reports</text>
+          <text class="d-t1" x="516" y="68" text-anchor="middle">OpenAPI / SDK</text>
+          <text class="d-t2" x="516" y="86" text-anchor="middle">programmatic access</text>
+          <text class="d-t1" x="780" y="68" text-anchor="middle">CI Plugin</text>
+          <text class="d-t2" x="780" y="86" text-anchor="middle">pipeline-triggered runs</text>
+
+          <!-- orchestrate -->
+          <rect class="d-band" x="124" y="148" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="174" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="174" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="174" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="196" text-anchor="middle">Master Agent</text>
+          <text class="d-t2" x="252" y="214" text-anchor="middle">plan split · summary</text>
+          <text class="d-t1" x="516" y="196" text-anchor="middle">Task Queue</text>
+          <text class="d-t2" x="516" y="214" text-anchor="middle">Redis Streams</text>
+          <text class="d-t1" x="780" y="196" text-anchor="middle">Resource Scheduler</text>
+          <text class="d-t2" x="780" y="214" text-anchor="middle">accounts · device locks · priority</text>
+
+          <!-- agents -->
+          <rect class="d-band" x="124" y="276" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="302" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="302" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="302" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="324" text-anchor="middle">Agent Worker 1</text>
+          <text class="d-t2" x="252" y="342" text-anchor="middle">LLM + MCP + browser instance</text>
+          <text class="d-t1" x="516" y="324" text-anchor="middle">Agent Worker 2</text>
+          <text class="d-t2" x="516" y="342" text-anchor="middle">identical instance</text>
+          <text class="d-t1" x="780" y="324" text-anchor="middle">Agent Worker N</text>
+          <text class="d-t2" x="780" y="342" text-anchor="middle">scales with queue depth</text>
+
+          <!-- capability -->
+          <rect class="d-band" x="124" y="404" width="776" height="104" rx="8"/>
+          <rect class="d-box" x="140" y="430" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="404" y="430" width="224" height="52" rx="6"/>
+          <rect class="d-box" x="668" y="430" width="224" height="52" rx="6"/>
+          <text class="d-t1" x="252" y="452" text-anchor="middle">LLM Service</text>
+          <text class="d-t2" x="252" y="470" text-anchor="middle">DeepSeek API · tiered routing</text>
+          <text class="d-t1" x="516" y="452" text-anchor="middle">MCP Tools</text>
+          <text class="d-t2" x="516" y="470" text-anchor="middle">Playwright · Appium · visual · data</text>
+          <text class="d-t1" x="780" y="452" text-anchor="middle">Element Repo &amp; Knowledge</text>
+          <text class="d-t2" x="780" y="470" text-anchor="middle">healed locators · failures (pgvector)</text>
+
+          <!-- data + report -->
+          <rect class="d-band" x="124" y="532" width="776" height="96" rx="8"/>
+          <rect class="d-box" x="140" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="330" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="520" y="558" width="170" height="44" rx="6"/>
+          <rect class="d-box" x="710" y="558" width="170" height="44" rx="6"/>
+          <text class="d-t1" x="225" y="582" text-anchor="middle">PostgreSQL</text>
+          <text class="d-t1" x="415" y="582" text-anchor="middle">Redis</text>
+          <text class="d-t1" x="605" y="582" text-anchor="middle">MinIO</text>
+          <text class="d-t1" x="795" y="582" text-anchor="middle">Report Center</text>
+          <text class="d-t2" x="225" y="596" text-anchor="middle">metadata · results</text>
+          <text class="d-t2" x="415" y="596" text-anchor="middle">queue · cache</text>
+          <text class="d-t2" x="605" y="596" text-anchor="middle">trace · video · shots</text>
+          <text class="d-t2" x="795" y="596" text-anchor="middle">aggregation · AI attribution</text>
+
+          <!-- layer labels -->
+          <text class="d-l1" x="112" y="76" text-anchor="end">Access</text>
+          <text class="d-l2" x="112" y="92" text-anchor="end">ACCESS</text>
+          <text class="d-l1" x="112" y="204" text-anchor="end">Orchestrate</text>
+          <text class="d-l2" x="112" y="220" text-anchor="end">ORCHESTRATE</text>
+          <text class="d-l1" x="112" y="332" text-anchor="end">Agents</text>
+          <text class="d-l2" x="112" y="348" text-anchor="end">AGENTS</text>
+          <text class="d-l1" x="112" y="460" text-anchor="end">Capability</text>
+          <text class="d-l2" x="112" y="476" text-anchor="end">CAPABILITY</text>
+          <text class="d-l1" x="112" y="584" text-anchor="end">Data + Report</text>
+          <text class="d-l2" x="112" y="600" text-anchor="end">DATA + REPORT</text>
+
+          <!-- control flow arrows -->
+          <line class="d-flow" x1="180" y1="124" x2="180" y2="145" marker-end="url(#arr-en)"/>
+          <text class="d-lbl" x="194" y="140">submit test plan</text>
+          <line class="d-flow" x1="180" y1="252" x2="180" y2="273" marker-end="url(#arr-en)"/>
+          <text class="d-lbl" x="194" y="268">dispatch case tasks</text>
+          <line class="d-flow" x1="180" y1="380" x2="180" y2="401" marker-end="url(#arr-en)"/>
+          <text class="d-lbl" x="194" y="396">tool calls · model requests</text>
+          <line class="d-flow" x1="180" y1="508" x2="180" y2="529" marker-end="url(#arr-en)"/>
+          <text class="d-lbl" x="194" y="524">metadata · artifact writes</text>
+
+          <!-- event stream (right rail) -->
+          <path class="d-flow" d="M 900 328 H 928 V 574 H 884" fill="none" marker-end="url(#arr-en)"/>
+          <text class="d-lbl" x="938" y="460" text-anchor="middle" transform="rotate(-90 938 460)">step event stream (real-time)</text>
+        </svg>
+        <figcaption>Overall architecture: the control flow takes four top-down hops; the agent's step event stream flows down the right side straight into the data layer — the report center subscribes to the stream and renders live, no polling of result tables.</figcaption>
+      </figure>
+
+      <h3>Two control semantics</h3>
+      <div class="callout"><span class="tag">CONTROL FLOW</span><p>The access layer submits a test plan → the Master Agent splits it into case tasks and enqueues them → the scheduler dispatches by resource availability → workers execute. The control flow is low-frequency and retryable.</p></div>
+      <div class="callout ok"><span class="tag">EVENT FLOW</span><p>Every worker action (tool call, LLM decision, assertion result, screenshot, video segment) is a high-frequency event written directly to the message bus. The report center subscribes and aggregates in real time; replaying the same event stream rebuilds any historical report — the same stream also feeds the failure knowledge base.</p></div>
+    </section>
+
+    <section class="sec" id="s3-en">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Multi-Agent Execution</h2></div>
+      <p class="sec-lead">A Master-Worker model: one Master Agent decomposes and schedules, N Worker Agents execute. Duties are separated; workers stay stateless.</p>
+
+      <h3>Master vs Worker</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:140px">Role</th><th>Responsibilities</th><th style="width:220px">Form</th></tr>
+        <tr><td>Master Agent</td><td>Test plan → case task decomposition; ordering by dependencies; requesting account / device resources; aggregating task results into a plan-level verdict</td><td>LLM agent + scheduling API tools (low-frequency calls)</td></tr>
+        <tr><td>Worker Agent</td><td>Claims a single case task, drives the browser / device; produces the step event stream; self-heals and retries on failure</td><td>Containerized LLM agent + MCP client + Playwright / Appium runtime</td></tr>
+        <tr><td>Scheduler</td><td>Task queue, priorities, retries, resource locks; worker heartbeats and reclamation</td><td>Deterministic code, no LLM</td></tr>
+      </table></div>
+      <div class="callout"><span class="tag">DECISION</span><p>The scheduler must be deterministic code. The LLM appears in exactly two places — the Master (decomposition) and the Worker (execution path selection). Introducing an LLM into queueing, retries or resource locks adds uncertainty with no payoff.</p></div>
+
+      <h3>Task state machine</h3>
+      <div class="flow">
+        <span class="chip">queued</span><span class="arr">→</span>
+        <span class="chip">assigned</span><span class="arr">→</span>
+        <span class="chip">running</span><span class="arr">→</span>
+        <span class="chip ok">passed</span>
+        <span class="chip bad">failed</span><span class="arr">→</span>
+        <span class="chip">retrying</span><span class="arr">→</span>
+        <span class="chip warn">quarantined</span>
+      </div>
+      <p>Each case is a retryable task. On failure it retries automatically (carrying the previous agent context and failure events); consecutive failures past the threshold move it to <code>quarantined</code>, out of regular resources, re-enqueued after manual or knowledge-base repair.</p>
+
+      <h3>Concurrency &amp; fault tolerance</h3>
+      <ul class="tight">
+        <li><b>Scaling unit = browser instance.</b> One worker container runs one browser session; K8s HPA scales by queue depth — decoupled from agent count, a simple resource model.</li>
+        <li><b>Shared resource locks.</b> Mutually exclusive resources (accounts, test data, devices) queue behind Redis distributed locks, so two agents never grab the same account.</li>
+        <li><b>Heartbeat reclamation.</b> The scheduler's watchdog reclaims and re-enqueues tasks when a worker heartbeat times out; results are reported idempotently (dedup by <code>task_id + attempt</code>).</li>
+        <li><b>Execution caps.</b> Every task has triple caps — step count, duration and reasoning tokens (platform-enforced) — to keep an agent from burning compute.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="s4-en">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Agent Execution Engine</h2></div>
+      <p class="sec-lead">Inside a worker runs an observe → decide → act → verify loop. Key choice: use Playwright 1.60's <code>boxes</code> (ARIA snapshots with coordinates) instead of per-screen screenshots for visual reasoning — textual, cheap, an order of magnitude faster; screenshots are kept only for report evidence and visual assertions.</p>
+
+      <figure>
+        <svg viewBox="0 0 950 300" role="img" aria-label="Test agent execution loop: observe, decide, act, verify — on verify failure a self-healing path returns to observe; step events stream to the report center in real time">
+          <defs>
+            <marker id="arr2-en" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+            </marker>
+          </defs>
+          <rect class="d-box" x="50" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="272" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="494" y="96" width="177" height="84" rx="8"/>
+          <rect class="d-box" x="716" y="96" width="177" height="84" rx="8"/>
+          <text class="d-t1" x="138" y="130" text-anchor="middle">Observe</text>
+          <text class="d-t2" x="138" y="154" text-anchor="middle">DOM · ARIA snapshot</text>
+          <text class="d-t2" x="138" y="169" text-anchor="middle">Playwright boxes</text>
+          <text class="d-t1" x="360" y="130" text-anchor="middle">Decide</text>
+          <text class="d-t2" x="360" y="154" text-anchor="middle">LLM picks</text>
+          <text class="d-t2" x="360" y="169" text-anchor="middle">next action</text>
+          <text class="d-t1" x="582" y="130" text-anchor="middle">Act</text>
+          <text class="d-t2" x="582" y="154" text-anchor="middle">MCP tool call</text>
+          <text class="d-t2" x="582" y="169" text-anchor="middle">click · type · assert</text>
+          <text class="d-t1" x="804" y="130" text-anchor="middle">Verify</text>
+          <text class="d-t2" x="804" y="154" text-anchor="middle">deterministic asserts</text>
+          <text class="d-t2" x="804" y="169" text-anchor="middle">visual diff</text>
+
+          <line class="d-flow" x1="227" y1="138" x2="269" y2="138" marker-end="url(#arr2-en)"/>
+          <text class="d-lbl" x="248" y="128" text-anchor="middle">snapshot</text>
+          <line class="d-flow" x1="449" y1="138" x2="491" y2="138" marker-end="url(#arr2-en)"/>
+          <text class="d-lbl" x="470" y="128" text-anchor="middle">action plan</text>
+          <line class="d-flow" x1="671" y1="138" x2="713" y2="138" marker-end="url(#arr2-en)"/>
+          <text class="d-lbl" x="692" y="128" text-anchor="middle">result</text>
+
+          <path class="d-flow" d="M 746 180 C 746 222, 138 222, 138 180" fill="none" marker-end="url(#arr2-en)"/>
+          <text class="d-lbl" x="442" y="244" text-anchor="middle">pass → next step; fail → self-heal re-locate (update element repo, retry)</text>
+
+          <line class="d-flow" x1="804" y1="180" x2="804" y2="230" marker-end="url(#arr2-en)"/>
+          <rect class="d-chip" x="700" y="232" width="208" height="34" rx="17"/>
+          <text class="d-chipt" x="804" y="253" text-anchor="middle">step event → report center</text>
+        </svg>
+        <figcaption>The agent execution loop. Verification is deterministic: assertions run as Playwright code; the LLM only decides "what to do next" — it never issues pass / fail verdicts directly.</figcaption>
+      </figure>
+
+      <h3>Toolset (MCP-wrapped)</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:200px">Tool</th><th>Capability</th><th style="width:260px">Implementation</th></tr>
+        <tr><td><code>browser_*</code></td><td>Navigate, click, type, wait, screenshot, read ARIA snapshot</td><td>Official Playwright MCP Server (MIT)</td></tr>
+        <tr><td><code>mobile_*</code></td><td>Same capabilities for mobile</td><td>Appium 2.0 custom MCP server (Apache-2.0)</td></tr>
+        <tr><td><code>assert_*</code></td><td>Text / element / attribute assertions returning structured results</td><td>Deterministic code, not LLM judgment</td></tr>
+        <tr><td><code>visual_diff</code></td><td>Screenshot vs baseline comparison, outputting diff regions</td><td>pixelmatch (MIT) / in-house; on failure the diff image goes to a vision model to judge whether the change is expected</td></tr>
+        <tr><td><code>data_*</code></td><td>Data seeding, API requests, database verification</td><td>Platform-side service tools</td></tr>
+      </table></div>
+
+      <h3>Two execution modes</h3>
+      <ul class="tight">
+        <li><b>Explore mode (agentic)</b>: natural-language cases go straight to the agent; paths are decided live by the LLM. For new-case validation, occasional paths, exceptional scenarios.</li>
+        <li><b>Cure mode (deterministic)</b>: agent-explored passing paths are cured into Playwright specs / pytest scripts; subsequent regression runs go deterministic — fast, stable, cheap. Explore once, cure for good.</li>
+      </ul>
+
+      <h3>Model routing, self-healing &amp; context optimization</h3>
+      <ul class="tight">
+        <li><b>Model service</b>: the LLM calls the DeepSeek official API (OpenAI-compatible protocol). <code>deepseek-chat</code> handles high-frequency action decisions (JSON output mode, fast and cheap); <code>deepseek-reasoner</code> handles low-frequency complex reasoning — plan decomposition, failure attribution, self-heal re-location. The interface layer allows an anytime downgrade to local open weights (Qwen3 via Ollama / vLLM, protocol unchanged).</li>
+        <li><b>Self-healing</b>: a locator breaks → the LLM re-locates from the snapshot → the new locator is written to the element repo (bound to the app version) → regression reuses it directly. The repo records the source (manual / healed); healed locators are promoted only after passing one regression verification.</li>
+        <li><b>Context optimization</b>: DOM snapshots keep only interactive elements and essential text; history steps are windowed to prevent context bloat in long cases; per-step token usage is accounted and surfaced as compute cost in the report center.</li>
+      </ul>
+      <div class="callout"><span class="tag">DECISION</span><p>The agent loop is a lightweight in-house loop (OpenAI-compatible protocol + JSON action protocol); each round's hooks are the event trace points from which reporting and auditing grow. browser-use (MIT) and LangGraph remain evolution options. The tool layer ships as an internal tool registry aligned with the MCP tool contract, so switching to the official Playwright MCP Server later is a smooth migration.</p></div>
+    </section>
+
+    <section class="sec" id="s5-en">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Report Center</h2></div>
+      <p class="sec-lead">Reports are not a post-execution artifact — they are a projection of the event stream: viewable during execution, replayable after.</p>
+
+      <h3>Event stream</h3>
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:200px">Event</th><th>Content</th><th style="width:240px">Rendered as</th></tr>
+        <tr><td><code>step_started</code></td><td>Step goal, sequence number, agent context summary</td><td>Timeline node</td></tr>
+        <tr><td><code>llm_decision</code></td><td>Why the LLM chose this action (summary)</td><td>"Why this click" expandable panel</td></tr>
+        <tr><td><code>tool_call</code></td><td>Tool name, args, duration, result summary</td><td>Inline timeline card</td></tr>
+        <tr><td><code>screenshot</code></td><td>Screenshot + DOM / ARIA snapshot, MinIO artifact reference</td><td>Step thumbnail, click to enlarge</td></tr>
+        <tr><td><code>assertion</code></td><td>Assertion expression and actual value</td><td>Pass / fail badge</td></tr>
+        <tr><td><code>video_segment</code></td><td>Playwright screencast video segment</td><td>Full segment replay</td></tr>
+        <tr><td><code>step_failed</code></td><td>Exception, snapshot at failure, retry decision</td><td>Red highlight + failure analysis link</td></tr>
+      </table></div>
+
+      <h3>Report formats</h3>
+      <ul class="tight">
+        <li><b>Real-time web report</b>: case timeline + screenshots / snapshots / video + LLM decision trail + assertion results, lighting up step by step during execution.</li>
+        <li><b>AI failure attribution</b>: after execution, an analysis agent classifies failures into five categories — product bug / environment issue / case design issue / locator drift / agent misjudgment — and drafts a defect automatically (repro steps + evidence references); one click pushes it to the defect system. Attribution results enter the failure knowledge base; recurring failures reference historical conclusions directly.</li>
+        <li><b>Allure-compatible export</b>: the event stream converts to Allure format (Apache-2.0), compatible with existing team report flows and CI integration; existing ReportPortal infrastructure (Apache-2.0, self-hosted) can also serve as the aggregation backend.</li>
+        <li><b>Trend dashboard</b>: four core metrics — pass rate, flakiness (case-level rerun rate), execution duration, inference cost (GPU time / tokens); cross-version baseline comparison (new version vs baseline screenshots / pass-rate regression flags).</li>
+      </ul>
+      <div class="callout"><span class="tag">DECISION</span><p>Prefer the in-house web report (real-time + AI attribution are the differentiators); Allure is export compatibility only, not the primary report — avoid letting a third-party report format constrain the event model's expressiveness.</p></div>
+    </section>
+
+    <section class="sec" id="s6-en">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Technology Stack</h2></div>
+      <p class="sec-lead">The 2026 baseline: Playwright for web (official MCP Server, v1.60 <code>boxes</code> designed for agents), Appium 2.0 for mobile (still the open standard for native mobile E2E; no AI-native replacement yet). Every component in the table is open-source; licenses noted after each pick.</p>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:150px">Layer</th><th style="width:270px">Pick (license)</th><th>Rationale</th><th style="width:180px">Alternative</th></tr>
+        <tr><td>Web core</td><td><b>Playwright ≥ 1.60</b> (Apache-2.0) + official Playwright MCP (MIT)</td><td>boxes (coordinate-carrying ARIA snapshots) are agent-designed; screencast video; native traces; cross Chromium/Firefox/WebKit</td><td>Selenium 4 + BiDi (legacy teams)</td></tr>
+        <tr><td>Mobile core</td><td><b>Appium 2.0</b> (Apache-2.0, UiAutomator2 / XCUITest)</td><td>One API for both platforms; richest ecosystem; cheap to wrap as an MCP server</td><td>Maestro (lightweight smoke)</td></tr>
+        <tr><td>Agent loop</td><td><b>In-house lightweight loop</b> + JSON action protocol + Playwright</td><td>Each round's hooks are the trace points; OpenAI-compatible protocol, swappable models; no proprietary deps</td><td>browser-use (MIT, fast prototype / reference), LangGraph (MIT)</td></tr>
+        <tr><td>Model service</td><td><b>DeepSeek official API</b> (deepseek-chat / deepseek-reasoner)</td><td>Low pricing, no GPU ops; JSON output mode fits the action protocol; OpenAI-compatible, downgradable to local open weights anytime</td><td>Local Qwen3 + Ollama / vLLM (protocol unchanged)</td></tr>
+        <tr><td>Backend</td><td><b>Python 3.12 + FastAPI</b> (MIT)</td><td>Richest AI ecosystem; same stack as pytest-playwright cured artifacts; async native</td><td>Node.js / TypeScript</td></tr>
+        <tr><td>Task orchestration</td><td><b>Redis + Arq</b> (MIT) to start, migrate to <b>Temporal</b> (MIT, self-hosted) at scale</td><td>P0 needs to be light; Temporal has more complete semantics for complex retries / workflows / compensation</td><td>Celery (BSD)</td></tr>
+        <tr><td>Frontend</td><td><b>Static SPA console</b> (zero deps, zero build, works out of the box)</td><td>Runs without a Node toolchain; hosted directly by the backend; timeline / table views in-house</td><td>React + Ant Design (MIT, refactor path at scale)</td></tr>
+        <tr><td>Storage</td><td><b>PostgreSQL 16</b> (PostgreSQL protocol, + pgvector) + <b>Redis</b> + <b>MinIO</b> (AGPL-3.0)</td><td>Metadata + vector search (failure knowledge base) + object storage in one stack; self-hosted control</td><td>MySQL, SeaweedFS</td></tr>
+        <tr><td>Reporting</td><td><b>In-house web report</b> + <b>Allure</b> (Apache-2.0) export</td><td>Real-time + AI attribution are core capabilities; not bound by third-party formats</td><td>ReportPortal (Apache-2.0, self-hosted)</td></tr>
+        <tr><td>Observability</td><td><b>OpenTelemetry</b> (Apache-2.0) + Prometheus / Grafana (self-hosted)</td><td>LLM call traces and compute visibility are a hard requirement for AI platforms</td><td>In-house instrumentation</td></tr>
+        <tr><td>Deployment</td><td><b>Docker + K8s</b> (Apache-2.0)</td><td>Worker-pool HPA, session isolation, containerized browsers</td><td>Docker Compose (P0 stage)</td></tr>
+      </table></div>
+
+      <div class="callout"><span class="tag">THE BOUNDARY OF LOCAL-FIRST</span><p>Everything except the LLM is open-source, self-hostable and license-free. The LLM calls the DeepSeek official API per the established decision (low pricing, no GPU ops); all model interfaces stay OpenAI-compatible — for data compliance or offline operation, swap in local open weights at the gateway (Qwen3 + Ollama / vLLM) with zero platform code changes.</p></div>
+      <div class="callout warn"><span class="tag">TRADE-OFFS</span><p>This design self-hosts execution (workers run in our own containers driving local browsers) rather than relying on a hosted browser cloud (Browserbase etc.) or hosted agent platforms — test targets are usually intranet environments where egress hosting doesn't apply; it also aligns with open-source-first. If the target site is public and the team is small, a hosted option can be a P0 cost shortcut; keep the interface layer consistent and migration stays open.</p></div>
+    </section>
+
+    <section class="sec" id="s7-en">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Data Model</h2></div>
+      <p class="sec-lead">Eight core entities, all persisted primarily in PostgreSQL; events and artifacts go to MinIO.</p>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:190px">Entity</th><th>Key fields</th><th>Notes</th></tr>
+        <tr><td><code>test_case</code></td><td><code>mode</code> (agentic / deterministic), <code>steps</code> (JSON), version number</td><td>Cases can be LLM-generated and cured; versioned to support baseline comparison</td></tr>
+        <tr><td><code>test_plan</code></td><td>Case set, dependencies, scheduling strategy, trigger</td><td>The Master's input; supports CI triggers and schedules</td></tr>
+        <tr><td><code>test_run</code></td><td>Plan reference, environment &amp; version under test, start/end time, summary status</td><td>One complete execution</td></tr>
+        <tr><td><code>test_task</code></td><td>Run / case references, state machine status, retry count, agent id</td><td>The queued task unit; idempotency key <code>task_id + attempt</code></td></tr>
+        <tr><td><code>agent_session</code></td><td>Task reference, worker id, browser session, inference usage (tokens / duration)</td><td>Source of compute stats and audit</td></tr>
+        <tr><td><code>step_event</code></td><td>Session reference, event type, timestamp, payload, artifact reference</td><td>The event stream persisted; the single source of truth for reports and replay</td></tr>
+        <tr><td><code>locator_repository</code></td><td>App / page / element, location strategy, bound version, source (manual / healed)</td><td>Persistent storage for self-healing products</td></tr>
+        <tr><td><code>failure_analysis</code></td><td>Run reference, attribution type, defect draft, confidence</td><td>AI attribution results, accumulated into the failure knowledge base (pgvector index)</td></tr>
+      </table></div>
+    </section>
+
+    <section class="sec" id="s8-en">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Implementation Roadmap</h2></div>
+      <p class="sec-lead">Three phases; each closes with a usable loop rather than building the full architecture at once.</p>
+
+      <div class="cards">
+        <div class="card">
+          <span class="phase">P0 · Single Agent Works</span>
+          <h4>Validate the core hypothesis</h4>
+          <ul>
+            <li>DeepSeek API + Playwright + lightweight loop</li>
+            <li>10 real cases, explore-mode execution</li>
+            <li>JSON report + screenshot evidence</li>
+            <li>Verify: can the agent reliably complete multi-step cases? What's the per-case reasoning cost?</li>
+          </ul>
+          <span class="due">2–3 weeks</span>
+        </div>
+        <div class="card">
+          <span class="phase">P1 · Platformization</span>
+          <h4>Multi-agent + report center</h4>
+          <ul>
+            <li>Case management (NL authoring + versioning)</li>
+            <li>Redis queue + Master-Worker, K8s worker pool</li>
+            <li>deepseek-chat / reasoner tiered routing</li>
+            <li>Event-stream bus + real-time web report</li>
+            <li>Element repo + failure retry and quarantine</li>
+          </ul>
+          <span class="due">4–6 weeks</span>
+        </div>
+        <div class="card">
+          <span class="phase">P2 · Intelligence</span>
+          <h4>Self-healing &amp; accumulation</h4>
+          <ul>
+            <li>Locator self-heal loop (probe → update → verify &amp; promote)</li>
+            <li>Cure mode: explore paths generate Playwright specs</li>
+            <li>AI failure attribution + defect drafts + failure knowledge base</li>
+            <li>Visual regression, mobile agent, Allure export, CI integration</li>
+          </ul>
+          <span class="due">Continuous iteration</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="s9-en">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Risks &amp; Mitigations</h2></div>
+
+      <div class="tbl-scroll"><table class="tbl">
+        <tr><th style="width:150px">Risk</th><th>Impact</th><th style="width:380px">Mitigation</th></tr>
+        <tr><td>LLM API dependency</td><td>Network instability / outage / key-leak risk</td><td>Interface abstraction + exponential backoff; keys live only in server-side env vars; OpenAI-compatible protocol allows local open-weight fallback</td></tr>
+        <tr><td>API cost</td><td>LLM call volume grows linearly with case count</td><td>DeepSeek's low pricing; chat / reasoner tiered routing; DOM snapshot trimming + token caps; cure mode moves high-frequency cases out of the LLM</td></tr>
+        <tr><td>LLM nondeterminism</td><td>Wrong pass/fail verdicts, path drift</td><td>Assertions run as deterministic code; cure key regressions; explore-mode verdicts labeled "AI-executed" with manual confirmation supported</td></tr>
+        <tr><td>Security &amp; compliance</td><td>Agents touch sensitive page data and accounts; page content egresses via the API</td><td>Worker container isolation + network allowlists; sensitive data masked on the model-request side; switch to local open weights for strict compliance; full audit events</td></tr>
+        <tr><td>Stability</td><td>Agent hangs, worker crashes, result loss</td><td>Watchdog heartbeat reclamation, idempotent reporting, task-level retry, quarantine, step-count / duration caps</td></tr>
+        <tr><td>Expectation gap</td><td>"AI testing" hype vs actual capability</td><td>P0 validates success rate and cost on 10 real cases before scaling — evidence before platform investment</td></tr>
+      </table></div>
+    </section>
+
+    <footer class="foot" id="ref-en">
+      <p><b>References</b> (searched 2026-08)</p>
+      <ul>
+        <li>Playwright 1.59/1.60 iteration and the boxes interface — <a href="https://cloud.tencent.cn/developer/article/2683110">Tencent Cloud Developer · Testing Digest, June 5</a></li>
+        <li>2026 cross-platform testing tool comparison (web / mobile / cloud) — <a href="https://www.drizz.dev/post/best-cross-platform-testing-tools">Drizz · Best Cross Platform Testing Tools 2026</a></li>
+        <li>2026 open-source test automation landscape — <a href="https://bugbug.io/blog/test-automation-tools/open-source-test-automation-tools/">BugBug · Open Source Test Automation Tools 2026</a></li>
+        <li>AI browser automation layers (Playwright / Stagehand / Browser Use / MCP) — <a href="https://fastcrw.com/blog/browser-automation-ai-agents">Browser Automation for AI Agents (2026)</a></li>
+        <li>browser-use (Python / TypeScript implementations and MCP mode) — <a href="https://github.com/webllm/browser-use">github.com/webllm/browser-use</a></li>
+        <li>Agentic UI Testing codelab (Gemini CLI + BrowserMCP + Playwright) — <a href="https://github.com/derailed-dash/agentic-ui-testing">github.com/derailed-dash/agentic-ui-testing</a></li>
+        <li>Maintenance cost of traditional frameworks and the Skill paradigm discussion — <a href="https://developer.aliyun.com/article/1733767">Alibaba Cloud Developer Community · Skills are dismantling traditional automation frameworks</a></li>
+        <li>vLLM (open-source inference engine, prefix caching / dynamic batching) — <a href="https://github.com/vllm-project/vllm">github.com/vllm-project/vllm</a></li>
+        <li>Ollama (run models locally, OpenAI-compatible API) — <a href="https://ollama.com">ollama.com</a></li>
+        <li>DeepSeek API official docs (chat / reasoner models and JSON output mode) — <a href="https://api-docs.deepseek.com">api-docs.deepseek.com</a></li>
+        <li>Qwen open model family (local fallback) — <a href="https://github.com/QwenLM/Qwen3">github.com/QwenLM/Qwen3</a></li>
+      </ul>
+    </footer>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  var LANG_KEY = "easyrun-lang";
+  var lang = localStorage.getItem(LANG_KEY) ||
+    (navigator.language && navigator.language.startsWith("zh") ? "zh" : "en");
+  var L = {
+    zh: { "doc.title": "EasyRun UI Agent · 平台架构方案 v0.3",
+      "doc.meta": "平台架构方案 v0.3 · 2026-08-15 · 状态：实现中 · DeepSeek API + 本地开源",
+      "toc.1": "设计目标与原则", "toc.2": "总体架构", "toc.3": "多 Agent 执行机制",
+      "toc.4": "Agent 执行引擎", "toc.5": "报告中心", "toc.6": "技术栈选型",
+      "toc.7": "数据模型", "toc.8": "实施路线图", "toc.9": "风险与对策", "toc.ref": "参考资料" },
+    en: { "doc.title": "EasyRun UI Agent · Platform Architecture v0.3",
+      "doc.meta": "Platform Architecture v0.3 · 2026-08-15 · Status: In Progress · DeepSeek API + Local Open Source",
+      "toc.1": "Goals & Principles", "toc.2": "Overall Architecture", "toc.3": "Multi-Agent Execution",
+      "toc.4": "Agent Execution Engine", "toc.5": "Report Center", "toc.6": "Technology Stack",
+      "toc.7": "Data Model", "toc.8": "Implementation Roadmap", "toc.9": "Risks & Mitigations", "toc.ref": "References" },
+  };
+  function apply() {
+    document.getElementById("doc-zh").hidden = lang !== "zh";
+    document.getElementById("doc-en").hidden = lang !== "en";
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    document.querySelectorAll(".rail a[data-anchor]").forEach(function (a) {
+      a.setAttribute("href", "#" + a.getAttribute("data-anchor") + (lang === "zh" ? "" : "-en"));
+    });
+    document.querySelectorAll("[data-l]").forEach(function (el) {
+      el.textContent = (L[lang] && L[lang][el.getAttribute("data-l")]) || el.textContent;
+    });
+    document.getElementById("lang-btn").textContent = lang === "zh" ? "EN" : "中文";
+  }
+  document.getElementById("lang-btn").addEventListener("click", function () {
+    lang = lang === "zh" ? "en" : "zh";
+    localStorage.setItem(LANG_KEY, lang);
+    apply();
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

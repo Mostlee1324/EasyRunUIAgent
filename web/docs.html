@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-l="doc.title">EasyRun UI Agent · 部署与使用文档</title>
+<style>
+:root {
+  --ground: #F4F6F9; --surface: #FFFFFF; --surface-2: #ECF0F5;
+  --ink: #182235; --ink-2: #52637B; --hairline: #DFE5EE;
+  --accent: #0E7490; --accent-ink: #0A5669; --accent-soft: #E3F2F6;
+  --warn: #B45309; --warn-soft: #FBF1E2;
+  --sans: -apple-system, "SF Pro Text", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0C1320; --surface: #131C2B; --surface-2: #1A2536;
+    --ink: #E5EBF4; --ink-2: #93A4BB; --hairline: #263348;
+    --accent: #33B5CE; --accent-ink: #7BD6E6; --accent-soft: #112733;
+    --warn: #FBBF24; --warn-soft: #2C2412;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 14.5px/1.85 var(--sans); }
+a { color: var(--accent-ink); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--hairline); }
+.topbar-in { max-width: 1200px; margin: 0 auto; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; }
+.brand { font: 600 15px/1 var(--mono); }
+.brand b { color: var(--accent); }
+.lang-btn { font: 600 12.5px/1 var(--sans); padding: 7px 14px; border-radius: 6px; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink); cursor: pointer; }
+.lang-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.wrap { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 40px; max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; align-items: start; }
+.toc { position: sticky; top: 64px; border-left: 2px solid var(--hairline); padding-left: 12px; font-size: 13px; }
+.toc a { display: block; padding: 3px 0; color: var(--ink-2); }
+.toc a:hover { color: var(--accent-ink); text-decoration: none; }
+.content { max-width: 860px; min-width: 0; }
+h1 { font-size: 26px; margin: 0 0 6px; }
+.sub { color: var(--ink-2); margin-bottom: 30px; }
+h2 { font-size: 19px; margin: 40px 0 12px; padding-top: 18px; border-top: 1px solid var(--hairline); }
+h3 { font-size: 15.5px; margin: 22px 0 8px; }
+p { margin: 8px 0; }
+ul, ol { padding-left: 22px; }
+li { margin: 4px 0; }
+code { font: 12.5px/1.5 var(--mono); background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 4px; padding: 1px 5px; color: var(--accent-ink); }
+pre { font: 12.5px/1.6 var(--mono); background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; padding: 14px 16px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13.5px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 8px; }
+th { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--hairline); background: var(--surface-2); }
+td { padding: 9px 12px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.note.warn { border-color: var(--warn); background: var(--warn-soft); }
+.note b { color: var(--accent-ink); }
+.doc-lang[hidden] { display: none; }
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: 1fr; }
+  .toc { position: static; border: none; padding: 0; }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <span class="brand">EasyRun <b>UI Agent</b> · <span data-l="doc.label">部署与使用文档</span></span>
+    <button id="lang-btn" class="lang-btn">EN</button>
+  </div>
+</div>
+<div class="wrap">
+  <nav class="toc">
+    <b><span data-l="toc.title">目录</span></b>
+    <a href="#quick" data-anchor="quick"><span data-l="toc.1">1. 快速开始</span></a>
+    <a href="#deploy" data-anchor="deploy"><span data-l="toc.2">2. 部署指南</span></a>
+    <a href="#usage" data-anchor="usage"><span data-l="toc.3">3. 平台功能使用</span></a>
+    <a href="#assert" data-anchor="assert"><span data-l="toc.4">4. 断言与完成条件</span></a>
+    <a href="#policy" data-anchor="policy"><span data-l="toc.5">5. 执行策略</span></a>
+    <a href="#config" data-anchor="config"><span data-l="toc.6">6. 配置项参考</span></a>
+    <a href="#api" data-anchor="api"><span data-l="toc.7">7. REST API 摘要</span></a>
+    <a href="#faq" data-anchor="faq"><span data-l="toc.8">8. 常见问题</span></a>
+    <a href="#cost" data-anchor="cost"><span data-l="toc.9">9. 成本与省钱</span></a>
+  </nav>
+
+  <main class="content">
+
+    <!-- ================= 中文 ================= -->
+    <div id="doc-zh" class="doc-lang">
+      <h1>EasyRun UI Agent · 部署与使用文档</h1>
+      <div class="sub">基于 AI Agent 的 UI 自动化测试平台 · LLM 走 DeepSeek 官方 API · 其余组件开源本地部署</div>
+
+      <h2 id="quick">1. 快速开始（新机器一键初始化）</h2>
+<pre>sh scripts/bootstrap.sh          # 自动：venv / 依赖 / 浏览器内核 / Allure / .env / 环境检查</pre>
+      <p>bootstrap 会按平台自动处理：macOS 12 及更早自动锁定 playwright 1.50（新版 chromium 不支持旧系统）、Allure CLI+JRE 下载到项目内 <code>tools/</code>（不碰系统）、生成 <code>.env</code> 模板。Windows 10/11 用：<code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code>。</p>
+      <ol>
+        <li>编辑 <code>.env</code> 填入 <code>DEEPSEEK_API_KEY=sk-xxx</code></li>
+        <li><code>source .venv/bin/activate && easyrun serve</code></li>
+        <li>打开控制台 <code>http://127.0.0.1:8001/app/</code></li>
+        <li>另开终端跑演示验证：<code>python scripts/demo.py</code></li>
+      </ol>
+
+      <h2 id="deploy">2. 部署指南</h2>
+      <h3>2.1 操作系统支持矩阵</h3>
+      <table>
+        <tr><th>系统</th><th>支持程度</th><th>初始化方式</th><th>说明</th></tr>
+        <tr><td><b>Ubuntu / Debian（Linux x64/arm64）</b></td><td>✅ 完整支持（推荐生产环境）</td><td><code>sh scripts/bootstrap.sh</code></td><td>Docker 形态即 Linux；多机集群推荐 Ubuntu 执行节点</td></tr>
+        <tr><td><b>macOS（x64 / Apple Silicon）</b></td><td>✅ 完整支持</td><td><code>sh scripts/bootstrap.sh</code></td><td>macOS 12 及更早自动锁定 playwright 1.50</td></tr>
+        <tr><td><b>Windows 10/11（x64）</b></td><td>✅ 支持</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></td><td>核心代码全平台；Windows 初始化脚本已提供</td></tr>
+      </table>
+      <p>三个平台可<b>同时混合部署</b>：不同系统的执行节点接入同一 Redis + PostgreSQL 集群。</p>
+
+      <h3>2.2 数据库配置（重点）</h3>
+      <p><b>方案一：SQLite（默认，零配置）</b>——适合单机开发，什么都不用配：</p>
+<pre># 留空即可：自动使用 data/easyrun.db
+# EASYRUN_DATABASE_URL=</pre>
+      <p><b>方案二：Docker 启动 PostgreSQL</b>（生产推荐）：</p>
+<pre>docker run -d --name easyrun-pg --restart unless-stopped \
+  -e POSTGRES_USER=easyrun -e POSTGRES_PASSWORD=EasyRun@2026 -e POSTGRES_DB=easyrun \
+  -p 5432:5432 -v easyrun_pg:/var/lib/postgresql/data postgres:16-alpine</pre>
+      <p><b>方案三：已有 PostgreSQL 实例</b>——先建库建用户：</p>
+<pre># psql 执行（或数据库管理工具）：
+CREATE USER easyrun WITH PASSWORD 'EasyRun@2026';
+CREATE DATABASE easyrun OWNER easyrun;</pre>
+      <p>连接串格式：<code>postgresql+asyncpg://用户名:密码@主机:端口/库名</code>（需先 <code>pip install -e ".[postgres]"</code> 安装驱动）：</p>
+<pre># .env 示例
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun</pre>
+      <div class="note warn"><b>密码含特殊字符时</b>需要 URL 编码，否则连接串解析错误。常见转义：<code>@</code>→<code>%40</code>、<code>:</code>→<code>%3A</code>、<code>/</code>→<code>%2F</code>、<code>#</code>→<code>%23</code>、<code>%</code>→<code>%25</code>。上例中 <code>EasyRun@2026</code> 实际是 <code>EasyRun%402026</code>——推荐密码避免 <code>@ : /</code> 以省去转义。</div>
+      <p>验证连接：</p>
+<pre># 容器内检查
+docker exec -it easyrun-pg psql -U easyrun -d easyrun -c "SELECT 1;"
+# 平台侧：启动后看日志无报错，或访问 /api/health 正常返回</pre>
+
+      <h3>2.3 Redis 配置</h3>
+      <p>单机开发留空即可（进程内队列）；<b>多机/多进程部署必配</b>：</p>
+<pre># Docker 启动（带密码）
+docker run -d --name easyrun-redis --restart unless-stopped \
+  -p 6379:6379 redis:7-alpine --requirepass EasyRunRedis
+
+# .env 示例
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0</pre>
+      <p>Redis 连接串格式：<code>redis://[:密码]@主机:端口/库号</code>。所有节点必须配置<b>同一个</b> Redis 地址。需先 <code>pip install -e ".[redis]"</code>。</p>
+      <p>验证：<code>redis-cli -h 192.168.1.10 -a EasyRunRedis ping</code> → PONG。</p>
+
+      <h3>2.4 LLM（DeepSeek）配置</h3>
+<pre># .env 示例
+DEEPSEEK_API_KEY=sk-你的密钥
+# 可选：自定义端点（默认 https://api.deepseek.com）
+# EASYRUN_DEEPSEEK_BASE_URL=https://api.deepseek.com
+# 可选：换本地开源模型（OpenAI 兼容端点，如 Ollama/vLLM）
+# EASYRUN_DEEPSEEK_BASE_URL=http://127.0.0.1:11434/v1
+# EASYRUN_DEEPSEEK_CHAT_MODEL=qwen3:32b
+# EASYRUN_DEEPSEEK_REASONER_MODEL=qwen3:32b</pre>
+      <p>密钥只在服务端使用，页面与报告不会回显。</p>
+
+      <h3>2.5 执行参数配置示例</h3>
+<pre># 生产集群推荐配置
+EASYRUN_WORKERS=4                # 并发 Agent 数（扩容单元 = 浏览器实例；控制节点设 0）
+EASYRUN_BROWSER_HEADLESS=true
+EASYRUN_MAX_ATTEMPTS=1           # 失败不自动重试
+EASYRUN_TASK_TIMEOUT_SECONDS=600
+EASYRUN_REPLAY_STEP_DELAY_MS=3000
+EASYRUN_DATA_DIR=/srv/easyrun-data   # 多机共享时指向 NFS 挂载点</pre>
+
+      <h3>2.6 形态 A：单机开发（零外部依赖）</h3>
+      <p>SQLite + 内存队列 + 内置 Worker。只配 <code>DEEPSEEK_API_KEY</code> 即可启动。</p>
+
+      <h3>2.7 形态 B：单机 Docker（推荐生产起步）</h3>
+<pre>export DEEPSEEK_API_KEY=sk-xxx
+docker compose up -d --build
+
+# 验证
+docker compose ps
+curl http://127.0.0.1:8001/api/health</pre>
+      <p>四服务：<code>api</code>（控制面）+ <code>worker</code>（执行面，内置 chromium）+ <code>redis</code> + <code>postgres</code>（compose 内已自动配好连接串，无需手改）。镜像构建时已内置 Allure CLI + JRE，报告生成开箱即用；运行时数据（截图 / Allure 结果与 HTML / PostgreSQL 数据）绑定挂载到项目根目录 <code>./data/</code>。</p>
+<pre>docker compose logs -f worker         # 看执行日志
+docker compose up -d --build worker   # 代码更新后重建
+docker compose down                   # 停止（数据保留在 ./data/，不随 down 删除）</pre>
+
+      <h4>2.7.1 同机多 Worker（控制器 ×1 + 执行节点 ×N）</h4>
+      <p>形态 B 默认只起 1 个 <code>worker</code> 容器（4 个并发 Agent）。机器资源充足时可用 <code>--scale</code> 把执行面扩到 N 个容器，控制面仍是 1 个 <code>api</code> 容器。</p>
+<pre>docker compose build
+docker compose up -d --scale worker=3    # api×1 + worker×3 + redis + postgres
+docker compose logs -f worker            # 提交多用例计划后应看到多个容器同时执行</pre>
+      <p><b>配置要点</b>（compose 已用 YAML 锚点给 api 和 worker 配好同一份连接，无需手改）：</p>
+      <table>
+        <tr><th>配置</th><th>取值</th><th>为什么</th></tr>
+        <tr><td><code>EASYRUN_REDIS_URL</code></td><td><code>redis://redis:6379/0</code></td><td>所有节点连<b>同一个队列</b>，任务才分发得出去</td></tr>
+        <tr><td><code>EASYRUN_DATABASE_URL</code></td><td>compose 内 postgres 连接串</td><td>所有节点读写<b>同一个元数据库</b>（任务/事件/报告）</td></tr>
+        <tr><td><code>EASYRUN_WORKERS</code></td><td>api=0 / worker=4</td><td>控制节点不跑浏览器；执行节点按资源设并发数</td></tr>
+        <tr><td><code>EASYRUN_DATA_DIR</code></td><td><code>/srv/data</code>（绑定挂载项目根目录 <code>./data</code>）</td><td>共享工件目录：控制台可预览任意 worker 节点的截图 / Allure</td></tr>
+        <tr><td><code>EASYRUN_ALLURE_BIN</code></td><td>不设（自动探测）</td><td>探测顺序：显式配置 → PATH → 项目根 <code>tools/bin/allure</code>；Docker 镜像已内置（容器内 <code>/srv/tools/bin/allure</code>），无需配置</td></tr>
+        <tr><td><code>EASYRUN_BROWSER_HEADLESS</code></td><td><code>true</code></td><td>容器内无显示器，必须无头</td></tr>
+      </table>
+      <p>在线扩缩容：<code>docker compose up -d --scale worker=5</code>（扩容）/ <code>--scale worker=1</code>（缩容，多余容器自动停止）。<code>--scale</code> 只能用于 worker：api 发布 8001 端口，多副本会冲突。</p>
+      <p>容量：1 个并发 Agent ≈ 1 个 chromium ≈ 400-600MB 内存。8G 内存建议 <code>--scale worker=2</code>，16G 建议 4，32G 建议 8。改每容器并发数（默认 4）：加 <code>docker-compose.override.yml</code> 设 <code>EASYRUN_WORKERS</code>（compose 自动合并，不改主文件）。</p>
+      <p>注意：<code>/api/health</code> 的 <code>workers</code> 显示的是 api 容器自身的 Worker 数（0），不代表执行能力，以 <code>docker compose logs worker</code> 为准。</p>
+
+      <h3>2.8 形态 C：多机集群（水平扩容）</h3>
+      <table>
+        <tr><th>节点</th><th>运行内容</th><th>关键配置</th></tr>
+        <tr><td>控制节点 ×1</td><td><code>easyrun serve</code></td><td><code>EASYRUN_WORKERS=0</code></td></tr>
+        <tr><td>执行节点 ×N</td><td><code>easyrun worker</code></td><td><code>EASYRUN_WORKERS=4</code></td></tr>
+        <tr><td>基础设施</td><td>Redis + PostgreSQL</td><td>见 2.2 / 2.3 的连接串示例</td></tr>
+        <tr><td>共享工件</td><td>截图 / Allure</td><td>把项目根目录 <code>data/</code>（或 <code>EASYRUN_DATA_DIR</code>）挂到 NFS</td></tr>
+      </table>
+      <p><b>控制节点 .env 完整示例：</b></p>
+<pre>DEEPSEEK_API_KEY=sk-xxx
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0
+EASYRUN_WORKERS=0
+EASYRUN_DATA_DIR=/mnt/easyrun-share</pre>
+      <p><b>执行节点 .env 完整示例：</b></p>
+<pre>DEEPSEEK_API_KEY=sk-xxx
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0
+EASYRUN_WORKERS=4
+EASYRUN_DATA_DIR=/mnt/easyrun-share</pre>
+      <p>部署顺序：① 基础设施（2.2/2.3）→ ② 控制节点 bootstrap + .env + <code>easyrun serve</code> → ③ 每台执行机 bootstrap + .env + <code>easyrun worker</code> → ④ NFS 挂载共享数据目录（完整配置见 <b>2.8.1 数据路径配置详解</b>）。</p>
+      <p>扩容 = 新机器执行第 ③ 步；节点下线直接停进程，崩溃任务由调度器超时回收。</p>
+      <p><b>注意</b>：多机部署<b>不是</b>只在控制节点上执行命令——每台执行机都要独立完成部署（拷贝代码 → bootstrap → 配 .env → 启动）。控制节点无法远程下发部署；执行节点连上共享 Redis 即自动接入，无需控制节点审批（无中心注册表）。执行机需要本机浏览器内核（bootstrap 自动下载），这是必须逐台部署的根本原因。</p>
+      <p>执行节点也可用 Docker：<code>docker compose up -d --no-deps --build worker</code>，并用 override 把 <code>EASYRUN_REDIS_URL</code> / <code>EASYRUN_DATABASE_URL</code> 指向中心基础设施 IP。<code>--no-deps</code> 必须加，否则 compose 会连带把依赖的 redis/postgres 也在这台机器上各起一套。Docker 执行节点镜像已内置 Allure CLI + JRE，工件落在该机项目根目录 <code>./data/artifacts/</code>（compose 绑定挂载 <code>./data:/srv/data</code>）。</p>
+
+      <h4>2.8.1 数据路径配置（共享工件）详解</h4>
+      <p><b>谁写谁读</b>：控制节点（api）生成 Allure 原始结果与 HTML（<code>data/artifacts/allure/</code>、<code>allure-html/</code>），并从共享目录读全部节点的截图打包附件；执行节点（worker）把步骤截图写入 <code>data/artifacts/sessions/</code>、视觉基线写入 <code>data/artifacts/baselines/</code>，基本只写不读。所以<b>控制节点必须能读到各执行节点的 <code>data/artifacts/</code></b>。</p>
+      <p><b>默认路径</b>（不改配置即如此）：裸机节点 = <code>&lt;项目根目录&gt;/data</code>（<code>EASYRUN_DATA_DIR</code> 默认值）；Docker 节点 = 宿主机 <code>&lt;项目根目录&gt;/data</code> ↔ 容器 <code>/srv/data</code>（compose 绑定挂载 <code>./data:/srv/data</code>）。</p>
+      <p><b>方案 A（推荐）：共享路径 = 控制节点项目根的 <code>data/</code></b>（控制节点当 NFS 服务器，所有节点数据都在各自项目 <code>data/</code> 下，配置零改动）：</p>
+<pre># 控制节点（Linux）：
+sudo apt install -y nfs-kernel-server
+echo '&lt;项目根目录&gt;/data 192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports
+sudo exportfs -ra && sudo systemctl enable --now nfs-server
+# 控制节点（macOS）：
+# sudo nfsd enable
+# echo '&lt;项目根目录&gt;/data -network 192.168.1.0 -mask 255.255.255.0 -maproot=root:wheel' | sudo tee -a /etc/exports
+# sudo nfsd update
+
+# 每台执行节点：
+sudo apt install -y nfs-common
+sudo mkdir -p &lt;项目根目录&gt;/data
+sudo mount -t nfs &lt;控制节点IP&gt;:&lt;控制节点项目根目录&gt;/data &lt;项目根目录&gt;/data
+echo '&lt;控制节点IP&gt;:&lt;控制节点项目根目录&gt;/data &lt;项目根目录&gt;/data nfs defaults,nofail 0 0' | sudo tee -a /etc/fstab</pre>
+      <p>挂好后执行节点<b>零配置</b>：裸机默认路径即该挂载点；Docker 的 <code>./data:/srv/data</code> 自动指向它。<b>先挂载再启动容器</b>（或挂载后 <code>docker compose restart</code>）——容器运行后再挂 NFS，容器看不到新内容。验证：执行节点 <code>touch data/nfs-check</code> 控制节点应能看到；控制台提交多用例计划后应能预览全部截图；生成 Allure 后各节点 <code>data/artifacts/allure-html/&lt;run_id&gt;/</code> 应一致。</p>
+      <p><b>方案 B：独立共享存储</b>：每台机器（<b>含控制节点</b>）把共享挂到任意位置（如 <code>/mnt/easyrun-share</code>）；裸机 <code>.env</code> 设 <code>EASYRUN_DATA_DIR=/mnt/easyrun-share</code>；Docker 用 <code>docker-compose.override.yml</code> 把 volume 改为 <code>/mnt/easyrun-share:/srv/data</code>。控制节点必须也挂同一共享——生成 Allure 报告的是控制节点。</p>
+      <p><b>关键坑</b>：① exports 必须加 <code>no_root_squash</code>（Docker 容器以 root 写，否则 Permission denied）；② 裸机节点写失败通常是各机 uid 不一致——统一 uid 或加 <code>all_squash,anonuid=&lt;uid&gt;</code>；③ fstab 加 <code>nofail</code> 防开机阻塞；④ 不共享时能跑，但跨节点截图无法预览、Allure 附件缺失——挂好共享后重新点「生成 Allure 报告」即可完整重打包；⑤ <code>data/</code> 整树导出含 <code>data/postgres/</code>，postgres 只在基础设施机本机访问，勿在多机同时启动指向同一目录的 postgres。</p>
+
+      <h3>2.9 配置排查速查</h3>
+      <ul>
+        <li><b>启动报数据库连接失败</b>：确认 PostgreSQL 端口可达（<code>nc -zv 主机 5432</code>）、密码转义正确、驱动已装（<code>pip install -e ".[postgres]"</code>）</li>
+        <li><b>Worker 连不上队列</b>：确认 Redis 密码/地址、驱动已装（<code>.[redis]</code>）、多节点配置的是同一 Redis</li>
+        <li><b>报告看不到其他节点截图</b>：<code>EASYRUN_DATA_DIR</code> 未指向共享存储</li>
+        <li><b>配置优先级</b>：命令行环境变量 &gt; .env 文件 &gt; 代码默认值</li>
+      </ul>
+
+      <h2 id="usage">3. 平台功能使用</h2>
+      <h3>用例管理</h3>
+      <ul>
+        <li>步骤写「做什么」，不写「怎么点」——Agent 负责翻译成具体操作；每条步骤一行自然语言</li>
+        <li>每个用例可设默认访问网址（运行时仍可覆盖）；断言至少一条，覆盖业务结果</li>
+        <li>不会写断言？用「AI 生成断言」：输入「页面出现订单编号；订单金额大于 100」自动转换</li>
+        <li>完成条件（可选）：页面出现某文本即停止操作（如「中性新闻 (」），防多余动作</li>
+        <li>一条用例一个业务场景，建议 ≤10 步；多场景用「计划」批量跑</li>
+      </ul>
+      <h3>执行与目标地址优先级</h3>
+<pre>运行时填写的网址  &gt;  用例默认网址  &gt;  平台默认目标地址（配置页设置）</pre>
+      <h3>报告</h3>
+      <ul>
+        <li>时间轴：每步 LLM 决策理由 / 动作结果 / 截图 / 断言 / 完成条件命中</li>
+        <li>失败时自动 AI 归因（五类）+ 缺陷草稿；「重跑失败用例」只重跑失败的</li>
+        <li>Allure 报告：报告页点「生成 Allure 报告」按需生成（带进度显示），生成后按钮变为「查看 Allure 报告」，点击在新窗口打开 <code>/allure-html/&lt;run_id&gt;/</code>；已生成过的执行直接显示查看按钮，无需重复生成</li>
+        <li>执行中可随时「取消执行」（排队任务直接跳过，执行中任务在下一步停止；多机/多容器部署同样生效）；执行记录支持多选/全选批量删除（不可恢复，删除前有确认）</li>
+      </ul>
+      <h3>固化与导出（0 token 回归）</h3>
+      <ul>
+        <li>探索模式通过后自动记录动作 → 用例行出现「固化」按钮 → 点击后变回放模式（不耗 LLM）</li>
+        <li>「导出代码」生成独立 Playwright 脚本（语义定位器 + 断言），脱离平台可跑、可进 CI</li>
+        <li>回放动作间默认间隔 3 秒（等待动态渲染），断言前有沉降等待——适配平滑滚动类页面</li>
+      </ul>
+
+      <h2 id="assert">4. 断言与完成条件参考</h2>
+      <p><b>9 类断言</b>（确定性校验，由代码执行）：</p>
+      <table>
+        <tr><th>类型</th><th>用途</th><th>target / expected 示例</th></tr>
+        <tr><td><code>text_contains</code></td><td>页面正文包含文本</td><td>订单编号 / —</td></tr>
+        <tr><td><code>url_contains</code></td><td>URL 包含片段</td><td>checkout / —</td></tr>
+        <tr><td><code>element_exists</code></td><td>CSS 选择器存在</td><td>.cart-button / —</td></tr>
+        <tr><td><code>element_count</code></td><td>选择器数量等于</td><td>.product / 3</td></tr>
+        <tr><td><code>element_text</code></td><td>存在文本元素</td><td>欢迎回来 / —</td></tr>
+        <tr><td><code>text_in_view</code></td><td>屏幕可见元素含文本（全 DOM，含普通 div/span 标签）</td><td>中性新闻 ( / —</td></tr>
+        <tr><td><code>text_near_top</code></td><td>文本元素出现在窗口上方区域</td><td>中性新闻 ( / 0.4（阈值可选）</td></tr>
+        <tr><td><code>value_compare</code></td><td>标签后数值比较（支持同元素与相邻兄弟元素）</td><td>订单金额 / &gt;= 100</td></tr>
+        <tr><td><code>visual</code></td><td>截图与基线一致（首次自动建基线）</td><td>checkout / —</td></tr>
+      </table>
+      <p><b>完成条件</b>：每步动作前检查，全部满足立即停止操作进入断言。字段 <code>min_steps</code> 可设"执行满 N 个动作后条件才生效"——用于目标状态与初始状态相同的场景（如利好新闻标签页面加载即可见，但用例要求先点日期再点按钮）。</p>
+      <p><b>步骤后断言</b>：断言可绑定步骤序号（断言行的「步骤序号」输入框，1-99）。探索模式下 Agent 每完成一个步骤调用 <code>case_step_done(step=N)</code> 标记，平台在该步骤动作后<b>立即</b>执行绑定断言（0 token 确定性校验；失败即止：有自愈配置先自愈，否则用例失败）。Agent 忘标记直接结束时，收尾兜底按步骤序补跑所有未标记步骤的绑定断言，再接无绑定断言。固化回放同样在标记点执行（标记随固化动作保存，deterministic 用例的步骤列表中可见 <code>case_step_done</code> JSON 行，属正常现象）；导出代码时绑定断言就地生成在对应动作之后。</p>
+      <p><b>步骤序号怎么对应</b>：填的序号 = 用例「步骤」列表的行号（从 1 开始，每行一步）。规则：</p>
+      <ul>
+        <li>一个步骤可绑多条断言；一条断言只绑一个序号。</li>
+        <li>序号是<b>步骤行号，不是动作数</b>——一个步骤可能对应多个动作（找元素 + 点击 + 等待），动作由 Agent 自主决策。</li>
+        <li>提示词中步骤带编号列出，绑定断言的步骤行会追加「完成本步骤后调用 <code>case_step_done(step=N)</code> 触发绑定断言」提示。</li>
+        <li>Agent 漏标记、或序号超出步骤数：断言<b>不会丢</b>——收尾兜底按序号顺序补跑（执行时机退化为「结束时」，报告仍显示「步骤 N」标签）。</li>
+        <li>不填序号 = 全部步骤完成后统一执行；增删步骤行后序号<b>不会自动跟随</b>，需手动核对。</li>
+      </ul>
+      <p>示例（断言「页面出现订单编号」填步骤序号 4）：</p>
+      <table>
+        <tr><th>步骤</th><th>绑定断言</th><th>执行时机</th></tr>
+        <tr><td>1. 打开商城首页</td><td><code>url_contains</code> /home（序号 1）</td><td>步骤 1 动作完成后立即校验</td></tr>
+        <tr><td>2. 搜索机械键盘</td><td><code>element_count</code> 搜索结果 = 12（序号 2）</td><td>步骤 2 动作完成后立即校验</td></tr>
+        <tr><td>3. 点击第一个搜索结果</td><td>（无）</td><td>—</td></tr>
+        <tr><td>4. 加入购物车并结算</td><td><code>text_contains</code> 订单编号（序号 4）</td><td>步骤 4 动作完成后立即校验</td></tr>
+        <tr><td>—</td><td><code>value_compare</code> 订单金额 &gt; 100（不填）</td><td>全部步骤完成后统一校验</td></tr>
+      </table>
+
+      <h2 id="policy">5. 执行策略</h2>
+      <table>
+        <tr><th>场景</th><th>行为</th></tr>
+        <tr><td>动作执行失败</td><td>立即终止，不重试不换方式</td></tr>
+        <tr><td>同一动作被重复请求</td><td>跳过并提示执行下一步（超过 2 次跳过才终止）</td></tr>
+        <tr><td>用例失败</td><td>不自动重试（<code>max_attempts=1</code>）</td></tr>
+        <tr><td>断言失败</td><td>不自愈重试，直接判失败</td></tr>
+        <tr><td>等不到资源锁</td><td>直接失败，不回队列</td></tr>
+        <tr><td>连续失败 3 次</td><td>隔离（quarantine，新执行不受影响）</td></tr>
+        <tr><td>需要重试</td><td>报告页「重跑失败用例」手动触发</td></tr>
+      </table>
+      <div class="note"><b>观察类工具豁免</b>：<code>browser_wait</code> / <code>browser_get_text</code> / 截图不参与"重复动作"判定，等待和读取可多次调用。</div>
+
+      <h2 id="config">6. 配置项参考（环境变量，前缀 EASYRUN_）</h2>
+      <table>
+        <tr><th>变量</th><th>默认</th><th>说明</th></tr>
+        <tr><td><code>EASYRUN_DATA_DIR</code></td><td>./data</td><td>运行时数据（数据库/截图/Allure/浏览器内核）</td></tr>
+        <tr><td><code>EASYRUN_DATABASE_URL</code></td><td>data/easyrun.db</td><td>生产用 postgresql+asyncpg://user:pass@host/db</td></tr>
+        <tr><td><code>EASYRUN_REDIS_URL</code></td><td>空（内存队列）</td><td>多机必填 redis://host:6379/0</td></tr>
+        <tr><td><code>EASYRUN_WORKERS</code></td><td>4</td><td>并发 Agent 数；纯 API 节点设 0</td></tr>
+        <tr><td><code>EASYRUN_MAX_ATTEMPTS</code></td><td>1</td><td>失败自动重试次数（1 = 只执行一次）；⚙ 可在控制台「配置」页运行时修改（1-10）</td></tr>
+        <tr><td><code>EASYRUN_MAX_NOOP_REPEATS</code></td><td>1</td><td>同一动作允许执行次数</td></tr>
+        <tr><td><code>EASYRUN_MAX_SKIPPED_REPEATS</code></td><td>2</td><td>重复请求最多跳过次数</td></tr>
+        <tr><td><code>EASYRUN_MAX_STEPS_PER_CASE</code></td><td>30</td><td>单用例动作步数上限；⚙ 可运行时修改（3-100，页面键名 <code>max_steps</code>）</td></tr>
+        <tr><td><code>EASYRUN_HEAL_ATTEMPTS</code></td><td>0</td><td>断言失败自愈轮数（0 = 不自愈）；⚙ 可运行时修改（0-5）</td></tr>
+        <tr><td><code>EASYRUN_REPLAY_STEP_DELAY_MS</code></td><td>3000</td><td>固化回放动作间延迟</td></tr>
+        <tr><td><code>EASYRUN_TASK_TIMEOUT_SECONDS</code></td><td>600</td><td>单任务执行上限</td></tr>
+        <tr><td><code>EASYRUN_BROWSER_HEADLESS</code></td><td>true</td><td>浏览器无头模式</td></tr>
+        <tr><td><code>EASYRUN_ALLURE_BIN</code></td><td>自动探测</td><td>allure CLI 路径（PATH → tools/bin/allure）</td></tr>
+        <tr><td><code>DEEPSEEK_API_KEY</code></td><td>—</td><td>DeepSeek API Key</td></tr>
+        <tr><td><code>EASYRUN_DEEPSEEK_BASE_URL</code></td><td>api.deepseek.com</td><td>OpenAI 兼容端点，可换本地 vLLM/Ollama</td></tr>
+      </table>
+      <p>⚙ = 可在控制台「配置」页运行时修改（存于共享数据库，多机一致，保存即生效；输入框置空保存 = 清除覆盖、回落环境变量默认）。「失败归因」开关也在配置页（关闭后失败任务不再自动调 deepseek-reasoner，省 token）。</p>
+
+      <h2 id="api">7. REST API 摘要</h2>
+<pre>GET    /api/cases                    用例列表（含整数编号 case_no）
+POST   /api/cases                    新建用例          PUT /api/cases/{id}       更新
+DELETE /api/cases/{id}               删除用例          POST /api/cases/{id}/run   单用例执行
+POST   /api/cases/{id}/cure          启用固化回放      POST /api/cases/{id}/export-code  导出 Playwright 代码
+POST   /api/cases/assertions/parse   自然语言 → 断言
+GET    /api/plans                    计划列表          POST /api/plans/{id}/run   计划执行
+POST   /api/runs                     提交执行          GET  /api/runs?page=&page_size=  分页列表
+GET    /api/runs/{id}/report         聚合报告（含归因）  GET  /api/runs/{id}/events    事件流
+POST   /api/runs/{id}/cancel         取消执行          POST /api/runs/{id}/rerun-failed 重跑失败用例
+DELETE /api/runs/{id}                删除执行          POST /api/runs/batch-delete     批量删除
+POST   /api/runs/{id}/allure         Allure 导出+HTML   GET  /api/trends            趋势
+GET    /api/locators                 元素库            GET/PUT /api/settings        平台配置</pre>
+      <p>交互式 API 文档：<a href="/docs" target="_blank">/docs（Swagger UI）</a></p>
+
+      <h2 id="faq">8. 常见问题</h2>
+      <ul>
+        <li><b>用例步骤 6 条，为什么执行了 20+ 个动作？</b> 步骤是自然语言目标，动作是 LLM 的每步决策（导航/点击/等待/确认…），一条步骤可能对应多个动作。上限由 <code>max_steps_per_case</code> 控制。</li>
+        <li><b>为什么有的用例没有「固化」按钮？</b> 固化动作在探索模式通过后自动记录（≥1 个动作）。从未通过、或已固化的用例没有该按钮（已固化的保留「导出代码」）。</li>
+        <li><b>完成条件配置了但不生效？</b> 检查页面真实文本（如全角/半角括号差异：「中性新闻（」vs「中性新闻 (」）；若目标状态与初始状态相同，配合 <code>min_steps</code> 使用。</li>
+        <li><b>点击新闻链接页面没反应？</b> 用 <code>browser_click_link</code> 按名称点击 class=sub-links 内的链接；站点平滑滚动需等待动画完成（平台已内置渲染轮询与沉降等待）。</li>
+        <li><b>回放（固化）失败但探索成功？</b> 页面结构变了 → 回到探索模式重跑一次重新固化；或检查 <code>EASYRUN_REPLAY_STEP_DELAY_MS</code> 是否足够。</li>
+        <li><b>时间显示差 8 小时？</b> 平台统一存 UTC、展示层转本地时区。若仍有偏差，确认服务器与浏览器时区设置。</li>
+        <li><b>macOS 12 装不了浏览器？</b> 新版 chromium 不支持旧系统，bootstrap 会自动锁定 playwright 1.50。</li>
+        <li><b>删除执行记录能恢复吗？</b> 不能。删除会清除任务/事件/截图/Allure 全部关联内容，操作前有确认提示。</li>
+      </ul>
+
+      <h2 id="cost">9. 成本与省钱</h2>
+      <ul>
+        <li>探索模式：每步决策约 0.5~1.5k tokens（页面快照占大头）；失败即终止 + 跳过重复 + 完成条件三重护栏防空转</li>
+        <li><b>固化回放 / 导出代码 = 0 token</b>——高频回归用例务必固化</li>
+        <li>失败归因用 <code>deepseek-reasoner</code>（更贵），仅失败时触发一次</li>
+        <li>总览页可查看 Token 消耗趋势；单用例成本 ≈ 决策数 × 单步 tokens</li>
+      </ul>
+    </div>
+
+    <!-- ================= English ================= -->
+    <div id="doc-en" class="doc-lang" hidden>
+      <h1>EasyRun UI Agent · Deployment &amp; User Guide</h1>
+      <div class="sub">AI-agent-based UI test automation platform · LLM via DeepSeek official API · everything else open-source and self-hosted</div>
+
+      <h2 id="quick-en">1. Quick Start (one-command bootstrap)</h2>
+<pre>sh scripts/bootstrap.sh          # venv / deps / browser / Allure / .env / env check</pre>
+      <p>bootstrap handles platform specifics automatically: macOS 12 and older pin playwright 1.50; the Allure CLI+JRE download into project-local <code>tools/</code>; it generates an <code>.env</code> template. On Windows 10/11 use: <code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code>.</p>
+      <ol>
+        <li>Edit <code>.env</code> and set <code>DEEPSEEK_API_KEY=sk-xxx</code></li>
+        <li><code>source .venv/bin/activate && easyrun serve</code></li>
+        <li>Open the console at <code>http://127.0.0.1:8001/app/</code></li>
+        <li>Verify with the demo: <code>python scripts/demo.py</code></li>
+      </ol>
+
+      <h2 id="deploy-en">2. Deployment Guide</h2>
+      <h3>2.1 OS support matrix</h3>
+      <table>
+        <tr><th>OS</th><th>Support</th><th>Bootstrap</th><th>Notes</th></tr>
+        <tr><td><b>Ubuntu / Debian (Linux x64/arm64)</b></td><td>✅ Full (recommended for production)</td><td><code>sh scripts/bootstrap.sh</code></td><td>Docker mode runs on Linux; Ubuntu recommended for worker nodes</td></tr>
+        <tr><td><b>macOS (x64 / Apple Silicon)</b></td><td>✅ Full</td><td><code>sh scripts/bootstrap.sh</code></td><td>macOS 12 and older auto-pin playwright 1.50</td></tr>
+        <tr><td><b>Windows 10/11 (x64)</b></td><td>✅ Supported</td><td><code>powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1</code></td><td>Core code is cross-platform; Windows bootstrap scripts provided</td></tr>
+      </table>
+      <p>All three platforms can be <b>mixed in one cluster</b>: worker nodes on different OSes join the same Redis + PostgreSQL.</p>
+
+      <h3>2.2 Database configuration</h3>
+      <p><b>Option 1: SQLite (default, zero config)</b> — for single-machine development:</p>
+<pre># Leave empty: data/easyrun.db is used automatically
+# EASYRUN_DATABASE_URL=</pre>
+      <p><b>Option 2: PostgreSQL via Docker</b> (recommended for production):</p>
+<pre>docker run -d --name easyrun-pg --restart unless-stopped \
+  -e POSTGRES_USER=easyrun -e POSTGRES_PASSWORD=EasyRun@2026 -e POSTGRES_DB=easyrun \
+  -p 5432:5432 -v easyrun_pg:/var/lib/postgresql/data postgres:16-alpine</pre>
+      <p><b>Option 3: existing PostgreSQL instance</b> — create the database and user first:</p>
+<pre># Run in psql (or any DB tool):
+CREATE USER easyrun WITH PASSWORD 'EasyRun@2026';
+CREATE DATABASE easyrun OWNER easyrun;</pre>
+      <p>Connection string format: <code>postgresql+asyncpg://user:password@host:port/dbname</code> (install the driver first with <code>pip install -e ".[postgres]"</code>):</p>
+<pre># .env example
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun</pre>
+      <div class="note warn"><b>Passwords with special characters</b> must be URL-encoded: <code>@</code>→<code>%40</code>, <code>:</code>→<code>%3A</code>, <code>/</code>→<code>%2F</code>, <code>#</code>→<code>%23</code>, <code>%</code>→<code>%25</code>. In the example above <code>EasyRun@2026</code> must actually be <code>EasyRun%402026</code> — prefer passwords without <code>@ : /</code> to avoid escaping.</div>
+      <p>Verify connectivity:</p>
+<pre># From inside the container
+docker exec -it easyrun-pg psql -U easyrun -d easyrun -c "SELECT 1;"
+# Or start the platform and check /api/health</pre>
+
+      <h3>2.3 Redis configuration</h3>
+      <p>Leave empty for single-machine development (in-process queue); <b>required for multi-machine/multi-process</b>:</p>
+<pre># Start with Docker (with password)
+docker run -d --name easyrun-redis --restart unless-stopped \
+  -p 6379:6379 redis:7-alpine --requirepass EasyRunRedis
+
+# .env example
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0</pre>
+      <p>Format: <code>redis://[:password]@host:port/db</code>. All nodes must use the <b>same</b> Redis address. Install the driver first: <code>pip install -e ".[redis]"</code>.</p>
+      <p>Verify: <code>redis-cli -h 192.168.1.10 -a EasyRunRedis ping</code> → PONG.</p>
+
+      <h3>2.4 LLM (DeepSeek) configuration</h3>
+<pre># .env example
+DEEPSEEK_API_KEY=sk-your-key
+# Optional: custom endpoint (default https://api.deepseek.com)
+# EASYRUN_DEEPSEEK_BASE_URL=https://api.deepseek.com
+# Optional: switch to a local open model (OpenAI-compatible endpoint, e.g. Ollama/vLLM)
+# EASYRUN_DEEPSEEK_BASE_URL=http://127.0.0.1:11434/v1
+# EASYRUN_DEEPSEEK_CHAT_MODEL=qwen3:32b
+# EASYRUN_DEEPSEEK_REASONER_MODEL=qwen3:32b</pre>
+      <p>The API key is used server-side only; it is never echoed in the UI or reports.</p>
+
+      <h3>2.5 Execution parameter examples</h3>
+<pre># Recommended production cluster settings
+EASYRUN_WORKERS=4                # Concurrent agents (scaling unit = browser instance; set 0 on control node)
+EASYRUN_BROWSER_HEADLESS=true
+EASYRUN_MAX_ATTEMPTS=1           # No automatic retry on failure
+EASYRUN_TASK_TIMEOUT_SECONDS=600
+EASYRUN_REPLAY_STEP_DELAY_MS=3000
+EASYRUN_DATA_DIR=/srv/easyrun-data   # Point to an NFS mount when sharing across nodes</pre>
+
+      <h3>2.6 Mode A: single-machine dev (zero external deps)</h3>
+      <p>SQLite + in-process queue + built-in workers. Only <code>DEEPSEEK_API_KEY</code> is required.</p>
+
+      <h3>2.7 Mode B: single-machine Docker (recommended production start)</h3>
+<pre>export DEEPSEEK_API_KEY=sk-xxx
+docker compose up -d --build
+
+# Verify
+docker compose ps
+curl http://127.0.0.1:8001/api/health</pre>
+      <p>Four services: <code>api</code> (control plane) + <code>worker</code> (execution plane with chromium) + <code>redis</code> + <code>postgres</code> (connection strings preconfigured inside compose). The image bundles the Allure CLI + JRE at build time, so report generation works out of the box; runtime data (screenshots / Allure results & HTML / PostgreSQL data) is bind-mounted to the project root <code>./data/</code>.</p>
+<pre>docker compose logs -f worker         # follow worker logs
+docker compose up -d --build worker   # rebuild after code changes
+docker compose down                   # stop (data stays in ./data/, not removed by down)</pre>
+
+      <h4>2.7.1 Same-machine multi-worker (control ×1 + execution nodes ×N)</h4>
+      <p>Mode B starts only 1 <code>worker</code> container (4 concurrent agents) by default. With enough machine resources, use <code>--scale</code> to expand the execution plane to N containers; the control plane stays a single <code>api</code> container.</p>
+<pre>docker compose build
+docker compose up -d --scale worker=3    # api×1 + worker×3 + redis + postgres
+docker compose logs -f worker            # after submitting a multi-case plan, several containers run concurrently</pre>
+      <p><b>Config essentials</b> (compose already shares one connection config between api and worker via a YAML anchor — no manual edits):</p>
+      <table>
+        <tr><th>Config</th><th>Value</th><th>Why</th></tr>
+        <tr><td><code>EASYRUN_REDIS_URL</code></td><td><code>redis://redis:6379/0</code></td><td>All nodes connect to the <b>same queue</b> for task distribution</td></tr>
+        <tr><td><code>EASYRUN_DATABASE_URL</code></td><td>postgres connection string inside compose</td><td>All nodes read/write the <b>same metadata DB</b> (tasks/events/reports)</td></tr>
+        <tr><td><code>EASYRUN_WORKERS</code></td><td>api=0 / worker=4</td><td>Control node runs no browsers; execution nodes set concurrency by resources</td></tr>
+        <tr><td><code>EASYRUN_DATA_DIR</code></td><td><code>/srv/data</code> (bind-mounted to the project root <code>./data</code>)</td><td>Shared artifacts: the console previews screenshots / Allure from any worker node</td></tr>
+        <tr><td><code>EASYRUN_ALLURE_BIN</code></td><td>Unset (auto-detected)</td><td>Detection order: explicit config → PATH → project-root <code>tools/bin/allure</code>; Docker images already bundle it (container path <code>/srv/tools/bin/allure</code>), no configuration needed</td></tr>
+        <tr><td><code>EASYRUN_BROWSER_HEADLESS</code></td><td><code>true</code></td><td>No display inside containers — headless is required</td></tr>
+      </table>
+      <p>Scale online: <code>docker compose up -d --scale worker=5</code> (out) / <code>--scale worker=1</code> (in; extra containers stop automatically). Use <code>--scale</code> only for worker: api publishes port 8001, so replicas would conflict.</p>
+      <p>Capacity: 1 concurrent agent ≈ 1 chromium ≈ 400-600MB RAM. Suggested: 8GB → <code>--scale worker=2</code>, 16GB → 4, 32GB → 8. To change per-container concurrency (default 4): add a <code>docker-compose.override.yml</code> setting <code>EASYRUN_WORKERS</code> (compose merges it automatically; the main file stays untouched).</p>
+      <p>Note: the <code>workers</code> field of <code>/api/health</code> reports the api container's own worker count (0) — it does not reflect execution capacity; check <code>docker compose logs worker</code> instead.</p>
+
+      <h3>2.8 Mode C: multi-machine cluster (horizontal scale)</h3>
+      <table>
+        <tr><th>Node</th><th>Runs</th><th>Key config</th></tr>
+        <tr><td>Control node ×1</td><td><code>easyrun serve</code></td><td><code>EASYRUN_WORKERS=0</code></td></tr>
+        <tr><td>Worker nodes ×N</td><td><code>easyrun worker</code></td><td><code>EASYRUN_WORKERS=4</code></td></tr>
+        <tr><td>Infrastructure</td><td>Redis + PostgreSQL</td><td>See 2.2 / 2.3 connection strings</td></tr>
+        <tr><td>Shared artifacts</td><td>Screenshots / Allure</td><td>Mount the project-root <code>data/</code> (or <code>EASYRUN_DATA_DIR</code>) onto NFS</td></tr>
+      </table>
+      <p><b>Control node .env example:</b></p>
+<pre>DEEPSEEK_API_KEY=sk-xxx
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0
+EASYRUN_WORKERS=0
+EASYRUN_DATA_DIR=/mnt/easyrun-share</pre>
+      <p><b>Worker node .env example:</b></p>
+<pre>DEEPSEEK_API_KEY=sk-xxx
+EASYRUN_DATABASE_URL=postgresql+asyncpg://easyrun:EasyRun@2026@192.168.1.10:5432/easyrun
+EASYRUN_REDIS_URL=redis://:EasyRunRedis@192.168.1.10:6379/0
+EASYRUN_WORKERS=4
+EASYRUN_DATA_DIR=/mnt/easyrun-share</pre>
+      <p>Order: ① infrastructure (2.2/2.3) → ② control node bootstrap + .env + <code>easyrun serve</code> → ③ each worker machine bootstrap + .env + <code>easyrun worker</code> → ④ mount the shared data dir via NFS (full configuration in <b>2.8.1 Data path configuration</b>).</p>
+      <p>Scale out = run step ③ on a new machine; take nodes offline by simply stopping the process (crashed tasks are recovered by the scheduler).</p>
+      <p><b>Note</b>: multi-machine deployment is <b>not</b> "run commands only on the control node" — every worker machine must be deployed independently (copy code → bootstrap → configure .env → start). The control node cannot provision remote machines; a worker node joins automatically as soon as it connects to the shared Redis (no central registry, no control-node approval). Worker machines need their own browser binaries (downloaded by bootstrap), which is why each machine must be deployed separately.</p>
+      <p>Worker nodes can also run as Docker containers: <code>docker compose up -d --no-deps --build worker</code>, with an override pointing <code>EASYRUN_REDIS_URL</code> / <code>EASYRUN_DATABASE_URL</code> at the central infrastructure IPs. <code>--no-deps</code> is required, otherwise compose would also start a local redis/postgres pair on this machine. Docker worker images already bundle the Allure CLI + JRE; artifacts land in that machine's project root <code>./data/artifacts/</code> (compose bind-mounts <code>./data:/srv/data</code>).</p>
+
+      <h4>2.8.1 Data path configuration (shared artifacts) in detail</h4>
+      <p><b>Who writes / reads what</b>: the control node (api) generates raw Allure results and HTML (<code>data/artifacts/allure/</code>, <code>allure-html/</code>) and reads all nodes' screenshots from the shared directory to pack attachments; worker nodes write step screenshots to <code>data/artifacts/sessions/</code> and visual baselines to <code>data/artifacts/baselines/</code>, effectively write-only. So <b>the control node must be able to read every worker's <code>data/artifacts/</code></b>.</p>
+      <p><b>Default paths</b> (when nothing is configured): bare-metal node = <code>&lt;project-root&gt;/data</code> (the <code>EASYRUN_DATA_DIR</code> default); Docker node = host <code>&lt;project-root&gt;/data</code> ↔ container <code>/srv/data</code> (compose bind mount <code>./data:/srv/data</code>).</p>
+      <p><b>Option A (recommended): shared path = the control node's project-root <code>data/</code></b> (the control node acts as the NFS server; every node's data stays under its own project <code>data/</code>, zero configuration changes):</p>
+<pre># Control node (Linux):
+sudo apt install -y nfs-kernel-server
+echo '&lt;project-root&gt;/data 192.168.1.0/24(rw,sync,no_subtree_check,no_root_squash)' | sudo tee -a /etc/exports
+sudo exportfs -ra && sudo systemctl enable --now nfs-server
+# Control node (macOS):
+# sudo nfsd enable
+# echo '&lt;project-root&gt;/data -network 192.168.1.0 -mask 255.255.255.0 -maproot=root:wheel' | sudo tee -a /etc/exports
+# sudo nfsd update
+
+# Each worker node:
+sudo apt install -y nfs-common
+sudo mkdir -p &lt;project-root&gt;/data
+sudo mount -t nfs &lt;control-IP&gt;:&lt;control-project-root&gt;/data &lt;project-root&gt;/data
+echo '&lt;control-IP&gt;:&lt;control-project-root&gt;/data &lt;project-root&gt;/data nfs defaults,nofail 0 0' | sudo tee -a /etc/fstab</pre>
+      <p>Once mounted, worker nodes need <b>zero configuration</b>: the bare-metal default path is that mount point; Docker's <code>./data:/srv/data</code> points at it automatically. <b>Mount first, then start containers</b> (or <code>docker compose restart</code> after mounting) — a container started before the NFS mount keeps seeing the old local directory. Verification: <code>touch data/nfs-check</code> on a worker should be visible on the control node; after submitting a multi-case plan the console should preview every screenshot; after generating Allure, <code>data/artifacts/allure-html/&lt;run_id&gt;/</code> should be identical on every node.</p>
+      <p><b>Option B: separate shared storage</b>: mount the share at any location (e.g. <code>/mnt/easyrun-share</code>) on every machine (<b>including the control node</b>); bare-metal sets <code>EASYRUN_DATA_DIR=/mnt/easyrun-share</code> in <code>.env</code>; Docker changes the volume to <code>/mnt/easyrun-share:/srv/data</code> in <code>docker-compose.override.yml</code>. The control node must mount the same share — it is the one generating the Allure report.</p>
+      <p><b>Key pitfalls</b>: ① exports must include <code>no_root_squash</code> (Docker containers write as root, otherwise Permission denied); ② bare-metal write failures usually mean mismatched uids across machines — align uids or add <code>all_squash,anonuid=&lt;uid&gt;</code>; ③ add <code>nofail</code> to fstab so a missing NFS never blocks boot; ④ without a share the cluster still runs, but cross-node screenshots can't be previewed and Allure attachments are missing — after mounting the share, click "Generate Allure report" again to repack completely; ⑤ the exported <code>data/</code> tree includes <code>data/postgres/</code> — postgres accesses it only locally on the infrastructure machine; never start postgres on multiple machines pointing at the same directory.</p>
+
+      <h3>2.9 Configuration troubleshooting</h3>
+      <ul>
+        <li><b>DB connection fails at startup</b>: check the PostgreSQL port is reachable (<code>nc -zv host 5432</code>), password is URL-encoded, driver installed (<code>pip install -e ".[postgres]"</code>)</li>
+        <li><b>Workers cannot reach the queue</b>: check Redis password/address, driver installed (<code>.[redis]</code>), and that all nodes point to the same Redis</li>
+        <li><b>Reports miss screenshots from other nodes</b>: <code>EASYRUN_DATA_DIR</code> is not on shared storage</li>
+        <li><b>Config precedence</b>: command-line env vars &gt; .env file &gt; code defaults</li>
+      </ul>
+
+      <h2 id="usage-en">3. Using the Platform</h2>
+      <h3>Case management</h3>
+      <ul>
+        <li>Write steps as "what to do", not "how to click" — the agent translates them into actions; one natural-language step per line</li>
+        <li>Each case can set a default target URL (overridable at run time); add at least one assertion covering the business outcome</li>
+        <li>Not sure how to write assertions? Use "AI Generate": type "page shows Order No; amount greater than 100" and it converts automatically</li>
+        <li>Completion conditions (optional): stop all actions once a text appears (e.g. "中性新闻 ("), preventing redundant actions</li>
+        <li>One case = one business scenario, ideally ≤10 steps; batch multiple scenarios with a Plan</li>
+      </ul>
+      <h3>Target URL priority</h3>
+<pre>run-time input  &gt;  case default URL  &gt;  platform default (Settings page)</pre>
+      <h3>Reports</h3>
+      <ul>
+        <li>Timeline: per-step LLM decision reasons / action results / screenshots / assertions / goal hits</li>
+        <li>Failures get automatic AI attribution (5 categories) + a defect draft; "Re-run Failed" re-runs only failed cases</li>
+        <li>Allure: click "Generate Allure Report" on the report page to generate on demand (with progress status); once saved, the button becomes "View Allure Report" and opens <code>/allure-html/&lt;run_id&gt;/</code> in a new tab. Runs already generated show the View button directly — no regeneration</li>
+        <li>Cancel a run anytime (queued tasks are skipped immediately, running tasks stop at the next step; works across machines/containers too); run records support multi-select / select-all batch delete (irreversible, with confirmation)</li>
+      </ul>
+      <h3>Cure &amp; export (0-token regression)</h3>
+      <ul>
+        <li>After an explore-mode pass, actions are recorded automatically → a "Cure" button appears → replay mode (no LLM cost)</li>
+        <li>"Export code" generates a standalone Playwright script (semantic locators + assertions) that runs outside the platform and fits CI</li>
+        <li>Replay waits 3s between actions (dynamic rendering) and settles before assertions — smooth-scroll pages included</li>
+      </ul>
+
+      <h2 id="assert-en">4. Assertions &amp; Completion Conditions</h2>
+      <p><b>9 assertion types</b> (deterministic, executed by code):</p>
+      <table>
+        <tr><th>Type</th><th>Purpose</th><th>target / expected example</th></tr>
+        <tr><td><code>text_contains</code></td><td>Body contains text</td><td>Order No / —</td></tr>
+        <tr><td><code>url_contains</code></td><td>URL contains fragment</td><td>checkout / —</td></tr>
+        <tr><td><code>element_exists</code></td><td>CSS selector exists</td><td>.cart-button / —</td></tr>
+        <tr><td><code>element_count</code></td><td>Selector count equals</td><td>.product / 3</td></tr>
+        <tr><td><code>element_text</code></td><td>Element with text exists</td><td>Welcome back / —</td></tr>
+        <tr><td><code>text_in_view</code></td><td>Visible element contains text (full DOM, incl. plain div/span labels)</td><td>中性新闻 ( / —</td></tr>
+        <tr><td><code>text_near_top</code></td><td>Text element appears in the upper window area</td><td>中性新闻 ( / 0.4 (threshold optional)</td></tr>
+        <tr><td><code>value_compare</code></td><td>Compare the number after a label (same-element or sibling forms)</td><td>Order Amount / &gt;= 100</td></tr>
+        <tr><td><code>visual</code></td><td>Screenshot matches baseline (baseline auto-created on first run)</td><td>checkout / —</td></tr>
+      </table>
+      <p><b>Completion conditions</b>: checked before every action; when all are satisfied, actions stop and assertions run. The <code>min_steps</code> field makes a condition effective only after N executed actions — for cases where the goal state equals the initial state (e.g. the 利好新闻 label is visible on load, but the case must click the date and button first).</p>
+      <p><b>Step-bound assertions</b>: an assertion can be bound to a step number (the "Step #" input on the assertion row, 1-99). In explore mode the agent calls <code>case_step_done(step=N)</code> after completing each step, and the platform runs the bound assertions <b>immediately</b> after that step's actions (0-token deterministic checks; fail-fast: self-heal first if configured, otherwise the case fails). If the agent finishes without marking a step, the wrap-up fallback runs all unmarked step assertions in step order, then the unbound ones. Cured replay also runs them at the marker points (markers are saved with the cured actions; seeing <code>case_step_done</code> JSON rows in a deterministic case's step list is normal); exported code generates the bound assertions inline right after the corresponding actions.</p>
+      <p><b>How the step number maps to your case</b>: the number is the <b>line number in the case's Steps list</b> (1-based, one step per line). Rules:</p>
+      <ul>
+        <li>One step can bind several assertions; one assertion binds exactly one step number.</li>
+        <li>The number is the <b>step line number, not an action count</b> — one step may correspond to several actions (find + click + wait); actions are decided by the agent.</li>
+        <li>In the prompt, steps are listed with numbers, and lines with bound assertions get a "call <code>case_step_done(step=N)</code> after completing this step" hint appended.</li>
+        <li>Agent misses a marker, or the number exceeds the step count: the assertion is <b>never lost</b> — the wrap-up fallback runs it in step-number order (it degrades to end-of-run timing, still labeled "step N" in the report).</li>
+        <li>No number = runs after all steps complete; adding/removing step lines does <b>not</b> renumber bindings automatically — double-check after editing steps.</li>
+      </ul>
+      <p>Example (the assertion "page shows Order No" is bound to step 4):</p>
+      <table>
+        <tr><th>Step</th><th>Bound assertion</th><th>When it runs</th></tr>
+        <tr><td>1. Open the store homepage</td><td><code>url_contains</code> /home (step 1)</td><td>Immediately after step 1's actions</td></tr>
+        <tr><td>2. Search "mechanical keyboard"</td><td><code>element_count</code> results = 12 (step 2)</td><td>Immediately after step 2's actions</td></tr>
+        <tr><td>3. Click the first result</td><td>(none)</td><td>—</td></tr>
+        <tr><td>4. Add to cart and check out</td><td><code>text_contains</code> Order No (step 4)</td><td>Immediately after step 4's actions</td></tr>
+        <tr><td>—</td><td><code>value_compare</code> order amount &gt; 100 (no number)</td><td>After all steps complete</td></tr>
+      </table>
+
+      <h2 id="policy-en">5. Execution Policy</h2>
+      <table>
+        <tr><th>Scenario</th><th>Behavior</th></tr>
+        <tr><td>Action execution fails</td><td>Terminate immediately — no retry, no alternative</td></tr>
+        <tr><td>Same action requested again</td><td>Skip it and prompt the next step (terminates after 2 skips)</td></tr>
+        <tr><td>Case fails</td><td>No automatic retry (<code>max_attempts=1</code>)</td></tr>
+        <tr><td>Assertion fails</td><td>No self-healing retry — fail directly</td></tr>
+        <tr><td>Resource lock timeout</td><td>Fail directly, not re-queued</td></tr>
+        <tr><td>3 consecutive failures</td><td>Quarantined (new runs unaffected)</td></tr>
+        <tr><td>Retry needed</td><td>Manual "Re-run Failed" on the report page</td></tr>
+      </table>
+      <div class="note"><b>Observation-tool exemption</b>: <code>browser_wait</code> / <code>browser_get_text</code> / screenshots are excluded from the repeat-action guard; waiting and reading may be called repeatedly.</div>
+
+      <h2 id="config-en">6. Configuration Reference (env vars, prefix EASYRUN_)</h2>
+      <table>
+        <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+        <tr><td><code>EASYRUN_DATA_DIR</code></td><td>./data</td><td>Runtime data (DB/screenshots/Allure/browser binaries)</td></tr>
+        <tr><td><code>EASYRUN_DATABASE_URL</code></td><td>data/easyrun.db</td><td>Production: postgresql+asyncpg://user:pass@host/db</td></tr>
+        <tr><td><code>EASYRUN_REDIS_URL</code></td><td>empty (in-process)</td><td>Required for multi-machine: redis://host:6379/0</td></tr>
+        <tr><td><code>EASYRUN_WORKERS</code></td><td>4</td><td>Concurrent agents; set 0 on pure API nodes</td></tr>
+        <tr><td><code>EASYRUN_MAX_ATTEMPTS</code></td><td>1</td><td>Automatic retry cap (1 = execute once); ⚙ changeable at runtime on the console Settings page (1-10)</td></tr>
+        <tr><td><code>EASYRUN_MAX_NOOP_REPEATS</code></td><td>1</td><td>Allowed executions per identical action</td></tr>
+        <tr><td><code>EASYRUN_MAX_SKIPPED_REPEATS</code></td><td>2</td><td>Max skips for repeated requests</td></tr>
+        <tr><td><code>EASYRUN_MAX_STEPS_PER_CASE</code></td><td>30</td><td>Action-step cap per case; ⚙ changeable at runtime (3-100, page key <code>max_steps</code>)</td></tr>
+        <tr><td><code>EASYRUN_HEAL_ATTEMPTS</code></td><td>0</td><td>Self-healing rounds on assertion failure (0 = off); ⚙ changeable at runtime (0-5)</td></tr>
+        <tr><td><code>EASYRUN_REPLAY_STEP_DELAY_MS</code></td><td>3000</td><td>Delay between replayed actions</td></tr>
+        <tr><td><code>EASYRUN_TASK_TIMEOUT_SECONDS</code></td><td>600</td><td>Per-task execution limit</td></tr>
+        <tr><td><code>EASYRUN_BROWSER_HEADLESS</code></td><td>true</td><td>Headless browser</td></tr>
+        <tr><td><code>EASYRUN_ALLURE_BIN</code></td><td>auto-detect</td><td>Allure CLI path (PATH → tools/bin/allure)</td></tr>
+        <tr><td><code>DEEPSEEK_API_KEY</code></td><td>—</td><td>DeepSeek API key</td></tr>
+        <tr><td><code>EASYRUN_DEEPSEEK_BASE_URL</code></td><td>api.deepseek.com</td><td>OpenAI-compatible endpoint; can point to local vLLM/Ollama</td></tr>
+      </table>
+      <p>⚙ = changeable at runtime on the console Settings page (stored in the shared database, consistent across machines, effective on save; saving an empty input clears the override and falls back to the environment default). The "Failure analysis" toggle is also on the Settings page (off = failed tasks skip the deepseek-reasoner call, saving tokens).</p>
+
+      <h2 id="api-en">7. REST API Summary</h2>
+<pre>GET    /api/cases                    Case list (with integer case_no)
+POST   /api/cases                    Create case       PUT /api/cases/{id}       Update
+DELETE /api/cases/{id}               Delete case       POST /api/cases/{id}/run  Run single case
+POST   /api/cases/{id}/cure          Enable replay     POST /api/cases/{id}/export-code  Export Playwright code
+POST   /api/cases/assertions/parse   NL → assertions
+GET    /api/plans                    Plan list         POST /api/plans/{id}/run  Run plan
+POST   /api/runs                     Submit run        GET  /api/runs?page=&page_size=  Paged list
+GET    /api/runs/{id}/report         Aggregated report (with attribution)
+POST   /api/runs/{id}/cancel         Cancel run        POST /api/runs/{id}/rerun-failed  Re-run failed
+DELETE /api/runs/{id}                Delete run        POST /api/runs/batch-delete  Batch delete
+POST   /api/runs/{id}/allure         Allure export+HTML  GET  /api/trends          Trends
+GET    /api/locators                 Element repo      GET/PUT /api/settings      Platform settings</pre>
+      <p>Interactive API docs: <a href="/docs" target="_blank">/docs (Swagger UI)</a></p>
+
+      <h2 id="faq-en">8. FAQ</h2>
+      <ul>
+        <li><b>The case has 6 steps but executed 20+ actions?</b> Steps are natural-language goals; actions are the LLM's per-step decisions (navigate/click/wait/verify…). One step may take several actions, capped by <code>max_steps_per_case</code>.</li>
+        <li><b>Why is there no "Cure" button on some cases?</b> Cured actions are recorded automatically after an explore-mode pass (≥1 action). Cases that never passed, or already-cured cases, don't show it (cured cases keep "Export code").</li>
+        <li><b>Completion condition configured but not firing?</b> Check the actual page text (full-width vs half-width parentheses: 「中性新闻（」vs「中性新闻 (」); if the goal state equals the initial state, combine with <code>min_steps</code>.</li>
+        <li><b>Clicking a news link does nothing?</b> Use <code>browser_click_link</code> to click by name inside class=sub-links; smooth-scroll sites need the animation to finish (the platform already polls for render and settles before assertions).</li>
+        <li><b>Replay (cured) fails but explore succeeds?</b> The page structure changed — re-run in explore mode to re-cure, or check <code>EASYRUN_REPLAY_STEP_DELAY_MS</code>.</li>
+        <li><b>Times are off by 8 hours?</b> The platform stores UTC and converts to local time for display. Check server/browser timezone settings if still off.</li>
+        <li><b>Can't install the browser on macOS 12?</b> Newer chromium dropped old macOS; bootstrap auto-pins playwright 1.50.</li>
+        <li><b>Can deleted run records be restored?</b> No — deletion removes tasks, events, screenshots and Allure artifacts, with a confirmation prompt first.</li>
+      </ul>
+
+      <h2 id="cost-en">9. Cost &amp; Saving Tips</h2>
+      <ul>
+        <li>Explore mode: ~0.5–1.5k tokens per decision (page snapshot dominates); fail-fast + skip-repeats + completion conditions guard against token burn</li>
+        <li><b>Replay / exported code = 0 tokens</b> — always cure high-frequency regression cases</li>
+        <li>Failure attribution uses <code>deepseek-reasoner</code> (pricier), triggered once per failure only</li>
+        <li>Watch token trends on the Overview page; per-case cost ≈ decisions × tokens per step</li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+<script>
+(function () {
+  var LANG_KEY = "easyrun-lang";
+  var lang = localStorage.getItem(LANG_KEY) ||
+    (navigator.language && navigator.language.startsWith("zh") ? "zh" : "en");
+  var L = {
+    zh: { "doc.title": "EasyRun UI Agent · 部署与使用文档",
+      "doc.label": "部署与使用文档", "toc.title": "目录",
+      "toc.1": "1. 快速开始", "toc.2": "2. 部署指南", "toc.3": "3. 平台功能使用",
+      "toc.4": "4. 断言与完成条件", "toc.5": "5. 执行策略", "toc.6": "6. 配置项参考",
+      "toc.7": "7. REST API 摘要", "toc.8": "8. 常见问题", "toc.9": "9. 成本与省钱" },
+    en: { "doc.title": "EasyRun UI Agent · Deployment & User Guide",
+      "doc.label": "Deployment & User Guide", "toc.title": "Contents",
+      "toc.1": "1. Quick Start", "toc.2": "2. Deployment Guide", "toc.3": "3. Using the Platform",
+      "toc.4": "4. Assertions & Conditions", "toc.5": "5. Execution Policy", "toc.6": "6. Config Reference",
+      "toc.7": "7. REST API Summary", "toc.8": "8. FAQ", "toc.9": "9. Cost & Savings" },
+  };
+  function apply() {
+    document.getElementById("doc-zh").hidden = lang !== "zh";
+    document.getElementById("doc-en").hidden = lang !== "en";
+    document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    document.querySelectorAll(".toc a[data-anchor]").forEach(function (a) {
+      a.setAttribute("href", "#" + a.getAttribute("data-anchor") + (lang === "zh" ? "" : "-en"));
+    });
+    document.querySelectorAll("[data-l]").forEach(function (el) {
+      el.textContent = (L[lang] && L[lang][el.getAttribute("data-l")]) || el.textContent;
+    });
+    document.getElementById("lang-btn").textContent = lang === "zh" ? "EN" : "中文";
+  }
+  document.getElementById("lang-btn").addEventListener("click", function () {
+    lang = lang === "zh" ? "en" : "zh";
+    localStorage.setItem(LANG_KEY, lang);
+    apply();
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

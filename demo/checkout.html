@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>EasyRun 演示商城 · 结算</title>
+<style>
+body { font: 14px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; margin: 0; }
+.wrap { max-width: 640px; margin: 40px auto; padding: 0 16px; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 14px 0; text-align: center; }
+.order { font-size: 22px; font-weight: 700; color: #0a5669; margin: 12px 0; }
+.ok { color: #15803d; font-weight: 600; }
+a { color: #0e7490; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>订单结算</h1>
+  <div class="card">
+    <p class="ok">支付成功</p>
+    <p>订单编号</p>
+    <p class="order" id="order-no">ER-20260815-0842</p>
+    <p>已分析: <strong>2363</strong> 条</p>
+    <p>感谢您的购买，测试商品将尽快发货。</p>
+    <p><a href="index.html">返回首页</a></p>
+  </div>
+</div>
+<script>
+document.getElementById("order-no").textContent = "ER-" + Date.now().toString().slice(-12);
+</script>
+</body>
+</html>

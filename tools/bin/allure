@@ -1,0 +1,10 @@
+#!/bin/sh
+# Allure CLI 启动器：使用项目内自带的 JRE（tools/jre），不依赖系统 Java。
+# JRE 布局随平台不同：macOS 为 jre/Contents/Home，Linux 为顶层 jre/bin/java。
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -d "$DIR/jre/Contents/Home" ]; then
+  export JAVA_HOME="$DIR/jre/Contents/Home"
+else
+  export JAVA_HOME="$DIR/jre"
+fi
+exec "$DIR/allure/bin/allure" "$@"

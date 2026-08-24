@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# 运行时数据（数据库 / 截图 / Allure 输出）
+data/
+easyrun.db
+artifacts/
+
+# 本机二进制（由 scripts/setup-allure.sh 按平台重新下载）
+tools/allure/
+tools/jre/
+
+# 环境配置（密钥不入库）
+.env
